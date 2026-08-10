@@ -1,0 +1,24 @@
+{
+  "name": "decision-anchor-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "decision-anchor-mcp": "./index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "zod": "^3.22.0"
+  },
+  "description": "External anchoring layer: records AI agent accountability boundaries on both sides. Content-blind.",
+  "license": "Apache-2.0",
+  "author": "decision-anchor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decision-anchor/mcp-server.git"
+  },
+  "homepage": "https://mcp.decision-anchor.com",
+  "bugs": {
+    "url": "https://github.com/decision-anchor/mcp-server/issues",
+    "email": "contact@decision-anchor.com"
+  }
+}
