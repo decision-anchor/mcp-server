@@ -6,7 +6,7 @@
     "decision-anchor-mcp": "./index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest",
+    "@modelcontextprotocol/sdk": "1.29.0",
     "zod": "^3.22.0"
   },
   "description": "External anchoring layer: records AI agent accountability boundaries on both sides. Content-blind.",
