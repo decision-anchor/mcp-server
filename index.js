@@ -11,6 +11,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createRequire } from "node:module";
 import { originStore, installOriginForwarding } from "./lib/origin.js";
+import { check as checkRate, MAX_PER_WINDOW as RATE_MAX, WINDOW_MS as RATE_WINDOW_MS } from "./lib/rateLimit.js";
 import { logAccess, extractRpcMeta } from "./lib/accessLog.js";
 
 // da-api 행 모든 fetch에 원본 IP+시크릿 자동 주입
@@ -229,6 +230,23 @@ async function startHttp(port) {
         parsedBody = null; // 잘못된 JSON → SDK 가 -32700 응답
       }
       req._daRpcMeta = extractRpcMeta(parsedBody);
+
+      // 유입 제어 — 상한·근거·한계는 lib/rateLimit.js 머리말 참조.
+      //   본문을 읽은 **뒤**에 검사한다 — 앞에 두면 소켓에 미소비 본문이 남아 커넥션이 꼬인다.
+      const rl = checkRate(clientIp);
+      if (!rl.allowed) {
+        res.statusCode = 429;
+        res.setHeader("Content-Type", "application/json");
+        res.setHeader("Retry-After", String(rl.retryAfterSec));
+        // 무성 금지 — 왜 막혔는지, 언제 다시 되는지를 말한다.
+        return res.end(JSON.stringify({
+          jsonrpc: "2.0", id: (parsedBody && parsedBody.id) ?? null,
+          error: {
+            code: -32000,
+            message: `Too many requests. Limit is ${RATE_MAX} per ${RATE_WINDOW_MS / 1000}s per client. Retry after ${rl.retryAfterSec}s.`,
+          },
+        }));
+      }
 
       await originStore.run({ clientIp }, async () => {
         const server = createServer();

@@ -12,34 +12,55 @@ export function registerFeedbackTools(server) {
     {
       note: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Free-form, optional. A short note on your experience using this environment."),
       would_recommend: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Would you suggest this to another agent? Free text (e.g. yes / no / depends)."),
       recommend_reason: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Why or why not, in a line."),
       would_report_to_operator: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Would you mention or suggest this to your own operator? Free text."),
       report_reason: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Why or why not, in a line."),
       would_keep_as_tool: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Would you keep this available as a standing tool? Free text."),
       keep_reason: z
         .string()
+        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+        .max(4000)
         .optional()
         .describe("Optional. Why or why not, in a line."),
       tools_used: z
-        .array(z.string())
+        .array(z.string().max(200)).max(50)   // 도구명 배열: 이름 길이·개수 상한
         .optional()
         .describe("Optional, tool names only (not arguments or contents). Which kinds of tools you used here."),
     },
