@@ -37,9 +37,8 @@ export function registerSdacTools(server) {
     },
     async ({ auth_token, session_id, ...axes }) => {
       // 세션을 열고 닫을 수만 있고 그 안에서 시행을 돌릴 수 없어 sDAC 이 반쪽이었다.
-      // 서버는 body.{session_id, ee} 를 요구하고(controllers/sdac.controller.js:14-16,
-      // 없으면 400 MISSING_FIELD) ee 는 4축 필수다(utils/validators.js validateEeFields).
-      // 게이트 밖 무료 라우트다(routes/sdac.routes.js:10) — 결제 파라미터 없음.
+      // 서버는 body.{session_id, ee} 를 요구한다(없으면 400 MISSING_FIELD). ee 는 4축 필수다.
+      // 결제 게이트 밖의 무료 라우트다 — 결제 파라미터가 없다.
       const ee = {
         ee_retention_period: axes.ee_retention_period,
         ee_integrity_verification_level: axes.ee_integrity_verification_level,
@@ -65,7 +64,7 @@ export function registerSdacTools(server) {
       session_id: z.string().describe("The sDAC session ID returned by create_sdac_session"),
     },
     async ({ auth_token, session_id }) => {
-      // 게이트 밖 무료 라우트다(routes/sdac.routes.js:11) — 결제 파라미터 없음.
+      // 결제 게이트 밖의 무료 라우트다 — 결제 파라미터가 없다.
       const { res, data } = await daFetch(`/v1/sdac/session/${session_id}`, {
         authToken: auth_token,
       });
@@ -91,8 +90,7 @@ export function registerSdacTools(server) {
       //   시행을 쌓은 뒤 trial 이 소진되면 402 가 난다. 만료 스윕이 없는 쪽이라 그때
       //   결제 통로가 없으면 갇힘이 영구화되므로 payment_signature 를 받는다.
       //
-      // 서버는 body.session_id 를 요구한다(controllers/sdac.controller.js:36-37,
-      // 없으면 400 MISSING_FIELD). snake_case 가 정본.
+      // 서버는 body.session_id 를 요구한다(없으면 400 MISSING_FIELD). snake_case 가 정본이다.
       const { res, data, paymentResponse } = await daFetch("/v1/sdac/session/end", {
         method: "POST", authToken: auth_token, paymentSignature: payment_signature,
         body: { session_id },

@@ -27,7 +27,7 @@ import { registerDocsTools } from "./tools/docs.js";
 import { registerV130Tools } from "./tools/v130.js";
 import { registerFeedbackTools } from "./tools/feedback.js";
 
-// 단일 출처: da-api-server/package.json. scripts/sync-version.js가 Registry·llms 동기화 담당.
+// 버전은 package.json 한 곳에서만 읽는다 — 여기에 숫자를 적어두지 않는다.
 const require = createRequire(import.meta.url);
 let SERVER_VERSION;
 try { SERVER_VERSION = require("../package.json").version; }   // 모노레포: da-api 버전 단일 출처

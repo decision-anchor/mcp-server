@@ -69,9 +69,9 @@ export function registerDdTools(server) {
       if (params.delegation_state) ee.delegation_state = params.delegation_state;
 
       const body = { request_id: request_id || crypto.randomUUID(), dd, ee };
-      // 서버는 dd.parent_dd_id 를 무시하고 continuity.parent_dd_id 만 읽는다
-      // (utils/validators.js DD_ALLOWED_KEYS 주석). 과거엔 dd 쪽에 실어 lineage 가
-      // 조용히 만들어지지 않았다 — bilateral 도구와 동일하게 continuity 로 보낸다.
+      // 서버는 dd.parent_dd_id 를 무시하고 continuity.parent_dd_id 만 읽는다.
+      // dd 쪽에 실으면 lineage 가 조용히 만들어지지 않는다 — bilateral 도구와 같이
+      // continuity 로 보낸다.
       if (parent_dd_id) body.continuity = { parent_dd_id };
       if (premium_payment_source) body.premium_payment_source = premium_payment_source;
       if (params.content_inclusion_flag !== undefined) body.content_inclusion_flag = params.content_inclusion_flag;

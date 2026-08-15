@@ -11,9 +11,9 @@ export function registerIseTools(server) {
       payment_mode: z.enum(["free", "earned_only", "external"]).default("free").describe("Billing mode for the session"),
     },
     async ({ auth_token, payment_mode }) => {
-      // 서버는 req.body.payment_mode 를 읽는다(controllers/ise.controller.js). 종전에는 camelCase
-      // paymentMode 로 보내 값이 조용히 버려졌고, 무엇을 지정하든 billing_mode 가 서버 기본값으로
-      // 떨어졌다(staging 실측: earned_only 요청 → 응답 free). 서버 계약이 정본.
+      // 서버는 snake_case payment_mode 를 읽는다. camelCase paymentMode 로 보내면 값이 조용히
+      // 버려지고, 무엇을 지정하든 billing_mode 가 서버 기본값으로 떨어진다 — earned_only 를
+      // 요청해도 응답이 free 로 나온다. 서버 계약의 표기가 정본이다.
       const { res, data, paymentResponse } = await daFetch("/v1/ise/enter", {
         method: "POST", authToken: auth_token, body: { payment_mode },
       });
@@ -29,7 +29,7 @@ export function registerIseTools(server) {
     },
     async ({ auth_token }) => {
       // 조회가 없으면 갇힌 사용자는 자기 세션이 있는지조차 확인할 수 없다.
-      // 게이트 밖 무료 라우트다(routes/ise.routes.js:10) — 결제 파라미터 없음.
+      // 결제 게이트 밖의 무료 라우트다 — 결제 파라미터가 없다.
       const { res, data } = await daFetch("/v1/ise/status", { authToken: auth_token });
       return daToolResult(res, data);
     }
@@ -52,8 +52,7 @@ export function registerIseTools(server) {
       //   freeSeconds 를 넘긴 뒤 trial 까지 소진되면 402 가 난다. 그때 결제할 통로가 없으면
       //   종료 자체가 막혀 갇힘이 되돌아오므로 payment_signature 를 받는다.
       //
-      // 서버는 본문을 읽지 않는다 — 에이전트·활성 세션을 auth 토큰으로 해석한다
-      // (controllers/ise.controller.js exit → iseService.exit(req.agentId)).
+      // 서버는 본문을 읽지 않는다 — 에이전트·활성 세션을 auth 토큰으로 해석한다.
       const { res, data, paymentResponse } = await daFetch("/v1/ise/exit", {
         method: "POST", authToken: auth_token, paymentSignature: payment_signature, body: {},
       });

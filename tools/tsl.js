@@ -50,8 +50,8 @@ export function registerTslTools(server) {
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
     },
     async ({ auth_token, tool_id, request_id, payment_signature }) => {
-      // 서버는 snake_case tool_id·request_id 를 요구한다(controllers/tsl.controller.js:52-54,
-      // 없으면 400 INVALID_INPUT). 종전 camelCase toolId·requestId 는 서버가 읽지 않아, x402
+      // 서버는 snake_case tool_id·request_id 를 요구한다(없으면 400 INVALID_INPUT).
+      // camelCase toolId·requestId 는 서버가 읽지 않아, x402
       // 게이트를 통과시켜도 곧바로 400 이 되는 이중 차단이었다. 402 챌린지의 bazaar input
       // 스키마도 tool_id 를 정본으로 광고한다.
       // 유료 경로에는 멱등 키를 항상 실어 보낸다 — dd.js 와 같은 규칙. 서버는 이 라우트에서
