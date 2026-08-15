@@ -6,11 +6,13 @@ import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
  * v1.3.0 신규 MCP 도구 — classification 조회 + ARA 메타관측 + DUR 메타데이터 분포.
  * 기존 도구 파일 구조(ESM, server.tool)와 동일 패턴. auth_token은 도구 입력 필드.
  *
- * 결제: ARA 3종(compare_anomaly·get_evidence_report·get_environment_anomaly)은 araGate 유료
- *   라우트라 payment_signature 를 받는다. classification·DUR 2종은 x402 게이트 밖이라 받지
- *   않는다 — routes/dur.routes.js 는 ff+auth 만 걸려 있다. 다만 "무과금"은 아니다:
- *   decision-metadata 는 컨트롤러가 chargeAraObservation 으로 DAC 를 내부 차감한다
- *   (controllers/dur.controller.js:146). x402 를 타지 않으므로 결제 헤더가 필요 없을 뿐이다.
+ * 결제: 유료 관측 4종(compare_anomaly·get_evidence_report·get_environment_anomaly·
+ *   get_decision_metadata_distribution)은 x402 선결제 라우트라 payment_signature 를 받는다.
+ *   미결제로 부르면 402 와 결제 조건이 돌아오고, 서명을 실어 다시 부르면 200 이다.
+ *   list_classifications·get_self_classification_distribution 은 무료라 받지 않는다.
+ *
+ *   ※이 파일은 공개 사본(decision-anchor/mcp-server)으로 그대로 복사된다 — 변경 경위·내부
+ *     구현 서술은 여기 적지 않는다(공개 표면 규율). 경위는 내부 기록에만 둔다.
  */
 export function registerV130Tools(server) {
   const wrap = ({ res, data, paymentResponse }) => daToolResult(res, data, { paymentResponse });
@@ -70,9 +72,15 @@ export function registerV130Tools(server) {
 
   server.tool(
     "get_decision_metadata_distribution",
-    "Observe your decision metadata distribution — decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Costs DAC.",
-    { auth_token: z.string().describe("Your DA agent auth token") },
-    async ({ auth_token }) => wrap(await daFetch("/v1/dur/decision-metadata", { authToken: auth_token }))
+    "Observe your decision metadata distribution — decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC) — returns 402 with payment terms first.",
+    {
+      auth_token: z.string().describe("Your DA agent auth token"),
+      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+    },
+    async ({ auth_token, payment_signature }) =>
+      wrap(await daFetch("/v1/dur/decision-metadata", {
+        authToken: auth_token, paymentSignature: payment_signature,
+      }))
   );
 
   server.tool(
