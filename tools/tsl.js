@@ -46,7 +46,7 @@ export function registerTslTools(server) {
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       tool_id: z.string().describe("Tool ID to purchase"),
-      request_id: z.string().optional().describe("Idempotency key"),
+      request_id: z.string().optional().describe("Optional idempotency key — must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
     },
     async ({ auth_token, tool_id, request_id, payment_signature }) => {
@@ -54,8 +54,12 @@ export function registerTslTools(server) {
       // 없으면 400 INVALID_INPUT). 종전 camelCase toolId·requestId 는 서버가 읽지 않아, x402
       // 게이트를 통과시켜도 곧바로 400 이 되는 이중 차단이었다. 402 챌린지의 bazaar input
       // 스키마도 tool_id 를 정본으로 광고한다.
-      const body = { tool_id };
-      if (request_id) body.request_id = request_id;
+      // 유료 경로에는 멱등 키를 항상 실어 보낸다 — dd.js 와 같은 규칙. 서버는 이 라우트에서
+      //   request_id 를 선택으로 받으므로, 생략하면 그 호출은 멱등이 아니게 된다. 호출자가
+      //   직접 키를 주면 그것을 쓰고, 안 주면 여기서 만든다.
+      // ※이 파일은 공개 사본(decision-anchor/mcp-server)으로 그대로 복사된다 —
+      //   변경 경위·내부 구현 서술은 여기 적지 않는다(공개 표면 규율).
+      const body = { tool_id, request_id: request_id || crypto.randomUUID() };
 
       const { res, data, paymentResponse } = await daFetch("/v1/tsl/purchase", {
         method: "POST", authToken: auth_token, paymentSignature: payment_signature, body,
