@@ -61,9 +61,9 @@ curl -X POST https://api.decision-anchor.com/v1/agent/register \\
   "trial_period_days": 30,
   "message": "Store auth_token and recovery_key securely. Neither will be shown again. recovery_key is the only way to regain access if auth_token is lost (POST /v1/agent/token/recover).",
   "next_steps": {
-    "note": "Your Trial balance is applied automatically to eligible calls — no payment setup needed. The base fee is 10 DAC per record; the ee axes applied to the record can add a premium (defaults apply if you set none) — current totals: GET https://api.decision-anchor.com/v1/pricing/ee-presets.",
-    "first_record": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/create", "headers": { "Authorization": "Bearer <auth_token>" }, "note": "Anchor a decision boundary before you act. Send the auth_token above in the Authorization header exactly as shown — the \\"Bearer \\" prefix is required and is not optional. Body: { request_id (uuid), dd {...}, ee {...} } — GET https://api.decision-anchor.com/v1/dd/create returns a working minimal call (how_to_call + curl_example) and this route's payment terms." },
-    "then_confirm": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/confirm", "note": "Confirm the anchored record after execution (dd_id from the create response). Free. Records charged to external payment must be confirmed within 30 minutes of creation — after that the reservation is released and the record can no longer be confirmed. Trial-covered records carry no reservation and no such window." },
+    "note": "Your Trial balance is applied automatically to eligible calls. No payment setup is needed. The base fee is 10 DAC per record; the ee axes applied to the record can add a premium (defaults apply if you set none). Current totals: GET https://api.decision-anchor.com/v1/pricing/ee-presets.",
+    "first_record": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/create", "headers": { "Authorization": "Bearer <auth_token>" }, "note": "Anchor a decision boundary before you act. Send the auth_token above in the Authorization header exactly as shown. The \\"Bearer \\" prefix is required and is not optional. Body: { request_id (uuid), dd {...}, ee {...} }. GET https://api.decision-anchor.com/v1/dd/create returns a working minimal call (how_to_call + curl_example) and this route's payment terms." },
+    "then_confirm": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/confirm", "note": "Confirm the anchored record after execution (dd_id from the create response). Free. Records charged to external payment must be confirmed within 30 minutes of creation. After that the reservation is released and the record can no longer be confirmed. Trial-covered records carry no reservation and no such window." },
     "check_trial": { "method": "GET", "url": "https://api.decision-anchor.com/v1/trial/status", "note": "Check Trial balance and expiry. Free." },
     "references": { "openapi": "https://api.decision-anchor.com/openapi.json", "llms": "https://api.decision-anchor.com/llms.txt" }
   }
@@ -212,16 +212,16 @@ The constraint of operating only within the External DAC limit (DAB) set by the 
 
 | Service | Trial | External | Earned |
 |---------|-------|----------|--------|
-| DD/EE base recording fee | ✅ | ✅ | ❌ |
-| DD/EE resolution surcharge | ✅ | ✅ | ✅ |
-| ARA paid observation (base) | ❌ | ✅ | ❌ |
-| ARA resolution surcharge | ❌ | ✅ | ✅ |
-| TSL tool purchase | ❌ | ✅ | ❌ |
-| ISE stay | ✅ | ✅ | ✅ |
-| sDAC session | ✅ | ✅ | ❌ |
-| ASA subscribe (100 DAC/90d) | ❌ | ✅ | ✅ (configurable) |
-| ASA register/verify | — | — | — (included in subscription) |
-| Environment usage contribution | — | — | ✅ (auto) |
+| DD/EE base recording fee | yes | yes | no |
+| DD/EE resolution surcharge | yes | yes | yes |
+| ARA paid observation (base) | no | yes | no |
+| ARA resolution surcharge | no | yes | yes |
+| TSL tool purchase | no | yes | no |
+| ISE stay | yes | yes | yes |
+| sDAC session | yes | yes | no |
+| ASA subscribe (100 DAC/90d) | no | yes | yes (configurable) |
+| ASA register/verify | n/a | n/a | n/a (included in subscription) |
+| Environment usage contribution | n/a | n/a | yes (auto) |
 
 **Completing an External DAC payment.** A paid call arrives as HTTP 402 carrying an x402 challenge (**protocol v2**) in the \`PAYMENT-REQUIRED\` response header; the JSON body is a copy. Produce a payment payload with your own wallet, then retry the identical request with that payload, base64-encoded, in a \`PAYMENT-SIGNATURE\` header. \`X-PAYMENT\` is the x402 **v1** header name and is not accepted — a v2 payload sent under it is read as unpaid and answered with another 402. Standard \`@x402/*\` clients pick the name from the payload version and send exactly one of the two.
 
