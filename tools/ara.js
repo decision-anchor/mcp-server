@@ -20,7 +20,7 @@ export function registerAraTools(server) {
 
   server.tool(
     "observe_pattern",
-    "Observe pattern-level analytics — EE distributions and action-type breakdowns across agents. Costs 1 DAC and requires auth_token (v1.3.1 — formerly free). Paid via x402 — Trial does not cover ARA observation.",
+    "Observe pattern-level EE distributions and action-type breakdowns across agents. Costs 1 DAC and requires auth_token (v1.3.1, formerly free). Paid via x402; Trial does not cover ARA observation.",
     {
       type: z.enum(["ee-distribution", "action-type"]).describe("Pattern type to observe"),
       auth_token: z.string().describe("Your DA agent auth token"),

@@ -42,7 +42,7 @@ export function registerV130Tools(server) {
 
   server.tool(
     "get_evidence_report",
-    "Generate an external-audience evidence report for one of your decisions. Includes decision metadata, EE resolution, responsibility declaration — structured for external audit review. Costs DAC.",
+    "An external-audience evidence report for one of your decisions. Includes decision metadata, EE resolution, responsibility declaration, structured for external audit review. Costs DAC.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       dd_id: z.string().describe("Decision ID (UUID)"),
