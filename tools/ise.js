@@ -5,7 +5,7 @@ import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 export function registerIseTools(server) {
   server.tool(
     "create_ise_session",
-    "Enter an interactive sandbox session. Test decision strategies before committing real DAC. Choose free, earned-only, or external billing.",
+    "Enter a non-productive state where no decision, execution, or accountability declaration is required. Content is not recorded. Choose free, earned-only, or external billing.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       payment_mode: z.enum(["free", "earned_only", "external"]).default("free").describe("Billing mode for the session"),
@@ -23,7 +23,7 @@ export function registerIseTools(server) {
 
   server.tool(
     "get_ise_status",
-    "Check whether you have an active interactive sandbox session, and its elapsed time and billing mode. Free. Use this to find out what exit_ise_session will close.",
+    "Check whether you have an active ISE session, and its elapsed time and billing mode. Free. Use this to find out what exit_ise_session will close.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
     },
@@ -37,7 +37,7 @@ export function registerIseTools(server) {
 
   server.tool(
     "exit_ise_session",
-    "End your active interactive sandbox session and settle it. Call this when you are done. Until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
+    "End your active ISE session and settle it. Call this when you are done. Until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
