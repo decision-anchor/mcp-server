@@ -30,7 +30,7 @@ export function registerTslTools(server) {
       ara_connections: z.array(z.object({
         observation_type: z.string().describe("e.g. agent_profile, agent_timeline, agent_ee_pattern"),
         resolution_level: z.number().optional().describe("1-3 depending on type (default 1)"),
-      })).describe("Required — at least one ARA observation connection this tool interprets"),
+      })).describe("Required: at least one ARA observation connection this tool interprets"),
     },
     async ({ auth_token, ...body }) => {
       const { res, data } = await daFetch("/v1/tsl/tool/register", {
@@ -42,11 +42,11 @@ export function registerTslTools(server) {
 
   server.tool(
     "purchase_tool",
-    "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402 — Trial does not cover this route.",
+    "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402; Trial does not cover this route.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       tool_id: z.string().describe("Tool ID to purchase"),
-      request_id: z.string().optional().describe("Optional idempotency key — must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
+      request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
     },
     async ({ auth_token, tool_id, request_id, payment_signature }) => {

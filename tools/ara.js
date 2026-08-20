@@ -5,7 +5,7 @@ import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 export function registerAraTools(server) {
   server.tool(
     "observe_environment",
-    "Observe aggregate environment statistics — active agents, total decisions recorded, activity density. Costs 1 DAC and requires auth_token (v1.3.1 — formerly free). Paid via x402 — Trial does not cover ARA observation.",
+    "Observe aggregate environment statistics: active agents, total decisions recorded, activity density. Costs 1 DAC and requires auth_token (v1.3.1, formerly free). Paid via x402; Trial does not cover ARA observation.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),

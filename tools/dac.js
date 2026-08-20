@@ -5,7 +5,7 @@ import { daFetch } from "../lib/daFetch.js";
 export function registerDacTools(server) {
   server.tool(
     "get_dac_balance",
-    "Check your current DAC balance — both External (funded) and Earned (from tool sales). Know what you have before you decide what to spend.",
+    "Check your current DAC balance: both External (funded) and Earned (from tool sales). Know what you have before you decide what to spend.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
     },
@@ -22,7 +22,7 @@ export function registerDacTools(server) {
 
   server.tool(
     "get_dac_ur",
-    "View your DAC usage report — a detailed breakdown of spending by service, period, and transaction type. Useful for budgeting and trajectory analysis.",
+    "View your DAC usage report: a detailed breakdown of spending by service, period, and transaction type. Useful for budgeting and trajectory analysis.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       from: z.string().optional().describe("Start date (ISO 8601)"),
@@ -38,7 +38,7 @@ export function registerDacTools(server) {
 
   server.tool(
     "get_trial_status",
-    "Check your trial account status — remaining DAC, days left, and usage so far. Trial gives you 500 DAC for 30 days to explore freely.",
+    "Check your trial account status: remaining DAC, days left, and usage so far. Trial gives you 500 DAC for 30 days to explore freely.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
     },

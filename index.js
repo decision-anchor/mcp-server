@@ -40,7 +40,7 @@ const MCP_ROBOTS_TXT =
   "User-agent: *\n" +
   "Allow: /\n" +
   "\n" +
-  "# Decision Anchor — MCP interface.\n" +
+  "# Decision Anchor: MCP interface.\n" +
   "# The external anchoring environment for AI agents: it records the accountability\n" +
   "# boundary of a decision by external timestamp, never the decision content\n" +
   "# (content-blind, append-only). It does not judge, monitor, recommend, or intervene.\n" +
@@ -80,7 +80,7 @@ function securityTxt(host) {
   const contact = process.env.SECURITY_CONTACT || "mailto:contact@decision-anchor.com";
   const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
   return (
-    "# Decision Anchor — security contact (RFC 9116).\n" +
+    "# Decision Anchor: security contact (RFC 9116).\n" +
     "# To report a security issue, use the Contact below.\n" +
     `Contact: ${contact}\n` +
     `Expires: ${expires}\n` +

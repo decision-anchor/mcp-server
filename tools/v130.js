@@ -56,7 +56,7 @@ export function registerV130Tools(server) {
 
   server.tool(
     "get_environment_anomaly",
-    "Observe environment-level anomaly distribution — within_band/outlier counts per dimension across the population. De-identified, k-anonymity k>=10. Costs DAC.",
+    "Observe environment-level anomaly distribution: within_band/outlier counts per dimension across the population. De-identified, k-anonymity k>=10. Costs DAC.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       period_days: z.number().default(30).describe("Window in days"),
@@ -72,7 +72,7 @@ export function registerV130Tools(server) {
 
   server.tool(
     "get_decision_metadata_distribution",
-    "Observe your decision metadata distribution — decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC) — returns 402 with payment terms first.",
+    "Observe your decision metadata distribution: decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC): returns 402 with payment terms first.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),

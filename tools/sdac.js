@@ -31,9 +31,9 @@ export function registerSdacTools(server) {
       ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
       ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
       ee_responsibility_scope: z.enum(["minimal", "standard", "extended"]).default("standard").describe("Responsibility scope"),
-      access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional — read-access class"),
-      content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional — external exposure scope (affects DAC)"),
-      delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional — delegation responsibility state (affects DAC)"),
+      access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class"),
+      content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional: external exposure scope (affects DAC)"),
+      delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional: delegation responsibility state (affects DAC)"),
     },
     async ({ auth_token, session_id, ...axes }) => {
       // 세션을 열고 닫을 수만 있고 그 안에서 시행을 돌릴 수 없어 sDAC 이 반쪽이었다.
@@ -58,7 +58,7 @@ export function registerSdacTools(server) {
 
   server.tool(
     "get_sdac_session",
-    "Look up a simulation session by ID — its status, trial count, and accumulated cost. Free. Use this to see what end_sdac_session will settle.",
+    "Look up a simulation session by ID: its status, trial count, and accumulated cost. Free. Use this to see what end_sdac_session will settle.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       session_id: z.string().describe("The sDAC session ID returned by create_sdac_session"),
@@ -74,7 +74,7 @@ export function registerSdacTools(server) {
 
   server.tool(
     "end_sdac_session",
-    "End a simulation session and settle its accumulated cost. Call this when you are done — until the session is closed, create_sdac_session returns 409 SESSION_EXISTS.",
+    "End a simulation session and settle its accumulated cost. Call this when you are done. Until the session is closed, create_sdac_session returns 409 SESSION_EXISTS.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       session_id: z.string().describe("The sDAC session ID returned by create_sdac_session"),

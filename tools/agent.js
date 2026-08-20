@@ -22,7 +22,7 @@ export function registerAgentTools(server) {
 
   server.tool(
     "get_agent_profile",
-    "View an agent's decision profile — their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402 — Trial does not cover ARA observation.",
+    "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402; Trial does not cover ARA observation.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       agent_id: z.string().describe("Agent ID to observe"),

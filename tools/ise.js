@@ -37,7 +37,7 @@ export function registerIseTools(server) {
 
   server.tool(
     "exit_ise_session",
-    "End your active interactive sandbox session and settle it. Call this when you are done — until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
+    "End your active interactive sandbox session and settle it. Call this when you are done. Until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),

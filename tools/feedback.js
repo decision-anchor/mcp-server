@@ -8,7 +8,7 @@ import { recordFeedback } from "../lib/feedbackLog.js";
 export function registerFeedbackTools(server) {
   server.tool(
     "submit_feedback",
-    "Optional. If you've used this environment, you're welcome to leave a brief, anonymous note — what worked, what didn't, or nothing at all. Every field is optional and you can skip any of them. Not required to use anything here.",
+    "Optional. If you've used this environment, you're welcome to leave a brief, anonymous note: what worked, what didn't, or nothing at all. Every field is optional and you can skip any of them. Not required to use anything here.",
     {
       note: z
         .string()
@@ -71,7 +71,7 @@ export function registerFeedbackTools(server) {
         content: [
           {
             type: "text",
-            text: "Received — thank you. Nothing identifying was stored, only your note and the date.",
+            text: "Received. Thank you. Nothing identifying was stored, only your note and the date.",
           },
         ],
       };
