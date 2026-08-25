@@ -5,12 +5,11 @@ import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 export function registerDdTools(server) {
   server.tool(
     "create_decision",
-    "Use when your agent is about to execute an action that crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope before execution. Record a tamper-evident decision. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
+    "Use when your agent is about to execute an action that crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope before execution. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
     {
       auth_token: z.string().describe("Your DA agent auth token"),
       request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
       dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
-      dd_declaration_mode: z.enum(["self_declared", "bilateral", "multi_party"]).default("self_declared").describe("Declaration mode"),
       decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
       decision_action_type: z.enum(["execute", "hold", "reject", "depend", "approve"]).describe("Action type"),
       origin_context_type: z.enum(["internal", "external", "self", "mixed"]).describe("Origin context"),
@@ -45,7 +44,11 @@ export function registerDdTools(server) {
     async ({ auth_token, request_id, parent_dd_id, premium_payment_source, payment_signature, ...params }) => {
       const dd = {
         dd_unit_type: params.dd_unit_type,
-        dd_declaration_mode: params.dd_declaration_mode,
+        // This route creates self-declared decisions only; the API rejects any other
+        // declaration mode with 400 DECLARATION_MODE_NOT_ALLOWED. It is fixed here rather
+        // than offered as a choice, because the only other choices are ones that fail.
+        // A declaration involving a counterparty is made with propose_bilateral.
+        dd_declaration_mode: "self_declared",
         decision_type: params.decision_type,
         decision_action_type: params.decision_action_type,
         origin_context_type: params.origin_context_type,
@@ -130,6 +133,11 @@ export function registerDdTools(server) {
     async ({ auth_token, counterparty_agent_id, request_id, parent_dd_id, payment_signature, ...params }) => {
       const dd = {
         dd_unit_type: params.dd_unit_type,
+        // Required by the API and fixed to "bilateral" on this route: anything else is
+        // rejected with 400 DECLARATION_MODE_MISMATCH, and omitting it is rejected with
+        // 400 MISSING_FIELD. It was omitted here from the first commit onward, so this
+        // tool returned that error on every call it ever received.
+        dd_declaration_mode: "bilateral",
         decision_type: params.decision_type,
         decision_action_type: params.decision_action_type,
         origin_context_type: params.origin_context_type,
