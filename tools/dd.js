@@ -17,7 +17,6 @@ export function registerDdTools(server) {
       selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
       selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
       decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
-      excluded_option_count: z.number().int().min(0).optional().describe("Optional: number of options excluded when deciding (integer >= 0)"),
       ee_preset: z.string().optional().describe("Optional EE preset name: expands into the four EE axes and overrides them (fetch active presets via GET /v1/pricing/ee-presets; e.g. EE_basic, EE_standard, EE_high)"),
       ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained (indefinite requires an active indefinite-retention subscription; otherwise 403)"),
       ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
@@ -54,7 +53,6 @@ export function registerDdTools(server) {
       };
       if (params.selection_scope) dd.selection_scope = params.selection_scope;
       if (params.decision_at !== undefined) dd.decision_at = params.decision_at;
-      if (params.excluded_option_count !== undefined) dd.excluded_option_count = params.excluded_option_count;
 
       const ee = {
         ee_retention_period: params.ee_retention_period,
@@ -117,7 +115,6 @@ export function registerDdTools(server) {
       selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
       selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
       decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
-      excluded_option_count: z.number().int().min(0).optional().describe("Optional: number of options excluded when deciding (integer >= 0)"),
       ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained (indefinite requires an active indefinite-retention subscription; otherwise 403)"),
       ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
       ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
@@ -140,7 +137,6 @@ export function registerDdTools(server) {
       };
       if (params.selection_scope) dd.selection_scope = params.selection_scope;
       if (params.decision_at !== undefined) dd.decision_at = params.decision_at;
-      if (params.excluded_option_count !== undefined) dd.excluded_option_count = params.excluded_option_count;
 
       const ee = {
         ee_retention_period: params.ee_retention_period,
