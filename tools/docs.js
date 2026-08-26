@@ -62,7 +62,7 @@ curl -X POST https://api.decision-anchor.com/v1/agent/register \\
   "message": "Store auth_token and recovery_key securely. Neither will be shown again. recovery_key is the only way to regain access if auth_token is lost (POST /v1/agent/token/recover).",
   "next_steps": {
     "note": "Your Trial balance is applied automatically to eligible calls. No payment setup is needed. The base fee is 10 DAC per record; the ee axes applied to the record can add a premium (defaults apply if you set none). Current totals: GET https://api.decision-anchor.com/v1/pricing/ee-presets.",
-    "first_record": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/create", "headers": { "Authorization": "Bearer <auth_token>" }, "note": "Anchor a decision boundary before you act. Send the auth_token above in the Authorization header exactly as shown. The \\"Bearer \\" prefix is required and is not optional. Body: { request_id (uuid), dd {...}, ee {...} }. GET https://api.decision-anchor.com/v1/dd/create returns a working minimal call (how_to_call + curl_example) and this route's payment terms." },
+    "first_record": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/create", "headers": { "Authorization": "Bearer <auth_token>" }, "note": "Anchor a decision boundary. You say when: before you act, or after. Send the auth_token above in the Authorization header exactly as shown. The \\"Bearer \\" prefix is required and is not optional. Body: { request_id (uuid), dd {...}, ee {...} }. GET https://api.decision-anchor.com/v1/dd/create returns a working minimal call (how_to_call + curl_example) and this route's payment terms." },
     "then_confirm": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/confirm", "note": "Confirm the anchored record after execution (dd_id from the create response). Free. Records charged to external payment must be confirmed within 30 minutes of creation. After that the reservation is released and the record can no longer be confirmed. Trial-covered records carry no reservation and no such window." },
     "check_trial": { "method": "GET", "url": "https://api.decision-anchor.com/v1/trial/status", "note": "Check Trial balance and expiry. Free." },
     "references": { "openapi": "https://api.decision-anchor.com/openapi.json", "llms": "https://api.decision-anchor.com/llms.txt" }
@@ -155,7 +155,9 @@ To verify later: \`GET /v1/dd/{dd_id}\` returns the full record with timestamp, 
 
 ## What happens here
 
-You declare a decision unit: a DD (Decision Declaration). Execution, refusal, deferral, suspension, silence: all are valid declarations. You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
+You declare a decision unit: a DD (Decision Declaration). Two separate axes describe it: what the decision did (execute, hold, reject, depend, approve) and how the selection ended (selected, rejected, aborted, silent, non_decision). All of them are valid declarations, including the ones where nothing was carried out.
+
+Unit(single/batch) | Action(execute/hold/reject/depend/approve) | State(selected/rejected/aborted/silent/non_decision) You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
 
 These choices are yours. DA does not tell you which resolution to choose. It does not tell you whether to declare or not, nor how to set the scope. There are no recommended settings. There is no optimal configuration. You decide.
 
@@ -270,7 +272,7 @@ When the limit is reached, further external DAC spending across services (DD/EE,
 Retention is selected through one EE field, \`ee_retention_period\`, which accepts five values. Send any of the five in that single field; the field does not split. The five are not one ladder, though:
 
 - **Axis values: \`short\`, \`medium\`, \`long\`.** These are the retention axis. Their add is priced along the axis, and \`long\` is one of the three conditions the conditional risk multiplier counts.
-- **Overlay options: \`extreme_long\`, \`indefinite\`.** These sit on top of the axis instead of extending it, and each is billed on its own basis (\`extreme_long\` once, \`indefinite\` as a monthly subscription). The multiplier counts \`Retention = Long\` among its conditions, so an overlay carries no axis value for that condition to match. This follows from what an overlay is; it is not an exception written for these two values.
+- **Overlay options: \`extreme_long\`, \`indefinite\`.** These sit on top of the axis instead of extending it, and each is billed on its own basis: \`extreme_long\` once, \`indefinite\` not at all today because it cannot be selected. The multiplier counts \`Retention = Long\` among its conditions, so an overlay carries no axis value for that condition to match. This follows from what an overlay is; it is not an exception written for these two values.
 
 | Retention | Layer | Duration | Pricing |
 |-----------|-------|----------|---------|
@@ -278,22 +280,11 @@ Retention is selected through one EE field, \`ee_retention_period\`, which accep
 | medium | axis | 365 days | 20 DAC |
 | long | axis | 1,825 days (5 yr) | 50 DAC (multiplier-eligible) |
 | extreme_long | overlay | 3,650 days (10 yr) | 100 DAC (one-time) |
-| indefinite | overlay | permanent while subscribed | 0 DAC on the axis + 50 DAC/month subscription |
+| indefinite | overlay | permanent | not currently available |
 
-\`extreme_long\` targets medical/financial AI retention compliance (7-10 years). \`indefinite\` requires an active subscription. Without one, selecting it is rejected.
+\`extreme_long\` targets medical/financial AI retention compliance (7-10 years), and it is the value to use for a long horizon. \`indefinite\` is declared in the enum but **is not currently available**: selecting it is rejected, and there is no route that makes it available. Treat it as a value the field accepts and the service does not.
 
 Current axis adds, overlay pricing, and whether \`indefinite\` is available are all readable at \`GET /v1/pricing/current\`.
-
-### Indefinite subscription
-
-\`\`\`javascript
-await client.retention.subscribeIndefinite();          // 50 DAC charged, status 'active'
-await client.dd.create({ request_id, dd, ee: { ee_retention_period: 'indefinite', ... } });
-const status = await client.retention.getIndefiniteStatus();   // 'active' | 'grace' | 'expired' | 'none'
-await client.retention.cancelIndefiniteSubscription();  // enters 14-day grace
-\`\`\`
-
-**Lifecycle.** \`active\`: subscription paid; new \`indefinite\` DDs allowed. \`grace\`: payment failed or cancelled; 14-day window to reactivate via \`subscribeIndefinite()\`. \`expired\`: grace ended; existing \`indefinite\` DDs are demoted to \`short\` (90 days counted from demotion time). Demotion is sticky. Reactivating starts a new subscription, but already-demoted DDs do not recover.
 
 ### Demotion in self-observation (v1.3.3)
 
