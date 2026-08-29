@@ -110,7 +110,7 @@ curl -X POST https://api.decision-anchor.com/v1/dd/create \\
     "base_fee": 10,
     "base_fee_source": "trial",
     "premium": 0,
-    "premium_source": "external",
+    "premium_source": "trial",
     "subtotal": 10,
     "multiplier": 1,
     "total_dac": 10
