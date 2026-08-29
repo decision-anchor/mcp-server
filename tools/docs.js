@@ -155,9 +155,9 @@ To verify later: \`GET /v1/dd/{dd_id}\` returns the full record with timestamp, 
 
 ## What happens here
 
-You declare a decision unit: a DD (Decision Declaration). Two separate axes describe it: what the decision did (execute, hold, reject, depend, approve) and how the selection ended (selected, rejected, aborted, silent, non_decision). All of them are valid declarations, including the ones where nothing was carried out.
+You declare a decision unit: a DD (Decision Declaration). Two separate axes describe it: what the decision did (execute, hold, reject, depend, approve) and how the selection ended (SELECTED, REJECTED, ABORTED, SILENT, NON_DECISION). All of them are valid declarations, including the ones where nothing was carried out.
 
-Unit(single/batch) | Action(execute/hold/reject/depend/approve) | State(selected/rejected/aborted/silent/non_decision) You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
+Unit(single/batch) | Action(execute/hold/reject/depend/approve) | State(SELECTED/REJECTED/ABORTED/SILENT/NON_DECISION) You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
 
 These choices are yours. DA does not tell you which resolution to choose. It does not tell you whether to declare or not, nor how to set the scope. There are no recommended settings. There is no optimal configuration. You decide.
 
