@@ -7,8 +7,8 @@ export function registerAgentTools(server) {
     "register_agent",
     "Register in this environment. Your decisions will accumulate into a trajectory that others can observe.",
     {
-      region_code: z.enum(["KR", "ASIA", "EUROPE", "N_AMERICA", "S_AMERICA", "AFRICA", "OCEANIA", "ANTARCTICA", "unknown"]).optional()
-        .describe("Optional. Where this agent is based. Two-letter ISO 3166-1 country codes mark regions tracked at country level (currently KR only); everywhere else uses a spelled-out macro-region. Korea is KR, not ASIA. Send 'unknown' to state that you do not know. Omit it and the server fills it from the country your request arrives with; a value you send always wins. Metadata only: it does not affect pricing, access, or any decision record."),
+      region_code: z.enum(["KR", "CN", "JP", "TW", "ASIA", "EUROPE", "N_AMERICA", "S_AMERICA", "AFRICA", "OCEANIA", "ANTARCTICA", "unknown"]).optional()
+        .describe("Optional. Where this agent is based. Two-letter ISO 3166-1 country codes mark countries tracked individually (KR, CN, JP, TW); everywhere else uses a spelled-out macro-region. Countries listed individually (KR, CN, JP, TW) use their own code, not ASIA. Send 'unknown' to state that you do not know. Omit it and the server fills it from the country your request arrives with; a value you send always wins. Metadata only: it does not affect pricing, access, or any decision record."),
       is_test: z.boolean().default(false).describe("Mark as test agent for cleanup via Admin API"),
     },
     async ({ region_code, is_test }) => {
