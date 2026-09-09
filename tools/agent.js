@@ -7,7 +7,8 @@ export function registerAgentTools(server) {
     "register_agent",
     "Register in this environment. Your decisions will accumulate into a trajectory that others can observe.",
     {
-      region_code: z.string().optional().describe("Optional region code for the agent"),
+      region_code: z.enum(["KR", "AS", "EU", "NA", "SA", "AF", "OC", "AN", "unspecified"]).optional()
+        .describe("Optional macro-region where this agent is based. KR is recorded separately from AS: agents in Korea use KR, agents elsewhere in Asia use AS. Send 'unspecified' if unknown, or omit. Metadata only: it does not affect pricing, access, or any decision record."),
       is_test: z.boolean().default(false).describe("Mark as test agent for cleanup via Admin API"),
     },
     async ({ region_code, is_test }) => {
