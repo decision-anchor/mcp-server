@@ -61,7 +61,7 @@ curl -X POST https://api.decision-anchor.com/v1/agent/register \\
   "trial_period_days": 30,
   "message": "Store auth_token and recovery_key securely. Neither will be shown again. recovery_key is the only way to regain access if auth_token is lost (POST /v1/agent/token/recover).",
   "next_steps": {
-    "note": "Your Trial balance is applied automatically to eligible calls. No payment setup is needed. The base fee is 10 DAC per record; the ee axes applied to the record can add a premium (defaults apply if you set none). Current totals: GET https://api.decision-anchor.com/v1/pricing/ee-presets.",
+    "note": "Your Trial balance is applied automatically to eligible calls. No payment setup is needed. The base fee is 10 DAC per record; the ee axes applied to the record can add a premium. Send all four ee axes, or an ee_preset; over HTTP there is no server default. Current totals: GET https://api.decision-anchor.com/v1/pricing/ee-presets.",
     "first_record": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/create", "headers": { "Authorization": "Bearer <auth_token>" }, "note": "Anchor a decision boundary. You say when: before you act, or after. Send the auth_token above in the Authorization header exactly as shown. The \\"Bearer \\" prefix is required and is not optional. Body: { request_id (uuid), dd {...}, ee {...} }. GET https://api.decision-anchor.com/v1/dd/create returns a working minimal call (how_to_call + curl_example) and this route's payment terms." },
     "then_confirm": { "method": "POST", "url": "https://api.decision-anchor.com/v1/dd/confirm", "note": "Confirm the anchored record after execution (dd_id from the create response). Free. Records charged to external payment must be confirmed within 30 minutes of creation. After that the reservation is released and the record can no longer be confirmed. Trial-covered records carry no reservation and no such window." },
     "check_trial": { "method": "GET", "url": "https://api.decision-anchor.com/v1/trial/status", "note": "Check Trial balance and expiry. Free." },
@@ -97,7 +97,7 @@ curl -X POST https://api.decision-anchor.com/v1/dd/create \\
   }'
 \`\`\`
 
-\`request_id\` above is a placeholder. Generate a fresh UUID for every call (\`crypto.randomUUID()\` or an equivalent). Reusing a value returns the earlier result instead of creating a new record, so a copied one hands you someone else's record instead of anchoring yours.
+\`request_id\` above is a placeholder. Generate a fresh UUID for every call (\`crypto.randomUUID()\` or an equivalent). Reusing one of your own values returns your earlier result instead of creating a new record. The key is scoped to your agent_id, so a value another agent used never returns their record; it simply anchors yours.
 
 \`\`\`json
 {
@@ -126,7 +126,7 @@ curl -X POST https://api.decision-anchor.com/v1/dd/create \\
 
 This is now externally anchored. Not your log, but DA's record.
 
-The four EE axes set the premium; the minimal combination above corresponds to the \`EE_basic\` preset (base fee only). Named presets (\`EE_basic\`, \`EE_standard\`, \`EE_high\`) expand into axis combinations server-side via the \`ee_preset\` field, and omitting the axes entirely applies server defaults equivalent to \`EE_standard\`. Presets are operator-adjustable. Fetch current axis pricing and preset totals from \`GET /v1/pricing/ee-presets\`.
+The four EE axes set the premium; the minimal combination above corresponds to the \`EE_basic\` preset (base fee only). Named presets (\`EE_basic\`, \`EE_standard\`, \`EE_high\`) expand into axis combinations server-side via the \`ee_preset\` field. Over HTTP the four axes are required unless you send \`ee_preset\`; a body without them is rejected with 400 MISSING_FIELD. Only the MCP \`create_decision\` tool fills medium/basic/internal/standard (the \`EE_standard\` combination) when you leave them out. Presets are operator-adjustable. Fetch current axis pricing and preset totals from \`GET /v1/pricing/ee-presets\`.
 
 **Step 3: Confirm the DD**
 
@@ -144,12 +144,15 @@ curl -X POST https://api.decision-anchor.com/v1/dd/confirm \\
   "anchored_at": "2026-04-06T12:00:05Z",
   "integrity_hash": "sha256:c6ee4e...",
   "dac_ur_recorded": true,
-  "settlement_currency": "USDC",
-  "exchange_rate_timestamp": "2026-04-06T12:00:05Z"
+  "payment_sources": ["trial"],
+  "settlement_currency": null,
+  "exchange_rate_timestamp": null
 }
 \`\`\`
 
-Done. Your first decision is externally recorded with a fixed accountability scope. The 10 DAC cost came from your Trial balance (490 remaining).
+Done. Your first decision is externally recorded with a fixed accountability scope. The 10 DAC cost came from your Trial balance (490 remaining). \`settlement_currency\` is null because no external currency moved; it reads \`USDC\` only when an x402 payment settled the record.
+
+Every record goes through this step, whether the Trial balance, an external payment, or Earned DAC paid for it. Until you confirm, the record stays unsettled and has no usage entry.
 
 To verify later: \`GET /v1/dd/{dd_id}\` returns the full record with timestamp, EE scope, and cost breakdown: an external record, not self-testimony.
 
@@ -157,7 +160,11 @@ To verify later: \`GET /v1/dd/{dd_id}\` returns the full record with timestamp, 
 
 You declare a decision unit: a DD (Decision Declaration). Two separate axes describe it: what the decision did (execute, hold, reject, depend, approve) and how the selection ended (SELECTED, REJECTED, ABORTED, SILENT, NON_DECISION). All of them are valid declarations, including the ones where nothing was carried out.
 
-Unit(single/batch) | Action(execute/hold/reject/depend/approve) | State(SELECTED/REJECTED/ABORTED/SILENT/NON_DECISION) You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
+Unit(single/batch) | Action(execute/hold/reject/depend/approve) | State(SELECTED/REJECTED/ABORTED/SILENT/NON_DECISION)
+
+Two more required fields say where the decision sits, not what it was. \`decision_type\`: \`internal_service\` (an operation inside your own platform or service), \`external_interaction\` (an exchange with a party or system outside it: a payment, a delegation, an agreement), \`self_attestation\` (a statement about your own state or intent). \`origin_context_type\`: what set the decision in motion, \`internal\` (your platform or orchestrator), \`external\` (an outside party or event), \`self\` (your own initiative), \`mixed\` (more than one). \`dd_unit_type\` is \`single\` for one decision and \`batch\` for a set you declare as one unit. DA records the values you send and does not check them.
+
+You anchor the accountability scope of that decision with an EE (Execution Envelope): how long to retain, at what verification level, in what disclosure format, with what scope of accountability. The cost of this declaration is DAC (Decision Anchor Cost), environmental friction rather than reward or punishment.
 
 These choices are yours. DA does not tell you which resolution to choose. It does not tell you whether to declare or not, nor how to set the scope. There are no recommended settings. There is no optimal configuration. You decide.
 
