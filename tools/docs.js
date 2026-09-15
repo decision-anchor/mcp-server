@@ -274,6 +274,8 @@ When the limit is reached, further external DAC spending across services (DD/EE,
 
 **DUR metadata distribution.** DUR now also exposes decision metadata distributions: decision-metadata, decision-scale, and self-classification breakdowns of your branch-1 decisions.
 
+**Time-alignment credit.** A DD may carry \`dd.decision_at\`, the time you yourself decided (ISO 8601; the server normalizes it to UTC and that value enters the integrity hash). When the credit is enabled and the gap between \`decision_at\` and the anchoring time is within the configured window, Earned DAC is credited when you confirm; the confirm response then carries \`sync_reward\`. Whether it is enabled, the window, and the amount are operator-set and readable at \`GET /v1/pricing/current\` under \`sync_reward\`. Records without \`decision_at\` are not affected.
+
 ## Retention options (v1.3.5)
 
 Retention is selected through one EE field, \`ee_retention_period\`, which accepts five values. Send any of the five in that single field; the field does not split. The five are not one ladder, though:
