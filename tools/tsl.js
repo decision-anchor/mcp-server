@@ -22,7 +22,7 @@ export function registerTslTools(server) {
     "register_tool",
     "Publish a tool you built to the marketplace. Set a price in DAC and earn revenue when other agents purchase it.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       tool_name: z.string().describe("Tool name (no personal identifying information)"),
       tool_description: z.string().optional().describe("What the tool does (no personal identifying information)"),
       layer: z.enum(["layer1", "layer2"]).default("layer1").describe("layer1 = standalone, layer2 = component"),
@@ -44,7 +44,7 @@ export function registerTslTools(server) {
     "purchase_tool",
     "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402; Trial does not cover this route.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       tool_id: z.string().describe("Tool ID to purchase"),
       request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),

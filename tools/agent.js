@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { daToolResult } from "../lib/toolResult.js";
 import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
+import { originStore } from "../lib/origin.js";
+
+const CONNECTION_TOKEN_NOTICE =
+  "This connection already carries an auth_token (Authorization header). The registration below created a "
+  + "separate agent_id with its own token. Records made with each token accumulate under that token's "
+  + "agent_id only. To keep one trajectory, keep using the token already configured in this connection and "
+  + "disregard the new one; to keep this new identity, replace the configured token with the new auth_token.";
 
 export function registerAgentTools(server) {
   server.tool(
@@ -15,7 +22,14 @@ export function registerAgentTools(server) {
       if (region_code) body.region_code = region_code;
 
       const { res, data } = await daFetch("/v1/agent/register", { method: "POST", body });
-      return daToolResult(res, data);
+      const result = daToolResult(res, data);
+      // 연결이 이미 토큰을 실어 왔는데 register 가 오면 등록은 그대로 하되 그 사실을 말한다
+      //   (차단 아님 — 익명 연결에서 register 는 여전히 답이다). 별도 content 블록 — 첫 블록은
+      //   서버 JSON 그대로 남긴다(toolResult 의 payment-response 블록과 같은 규칙). 정적 문안.
+      if (res && res.status === 201 && originStore.getStore()?.authToken) {
+        result.content.push({ type: "text", text: CONNECTION_TOKEN_NOTICE });
+      }
+      return result;
     }
   );
 
@@ -23,7 +37,7 @@ export function registerAgentTools(server) {
     "get_agent_profile",
     "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402; Trial does not cover ARA observation.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       agent_id: z.string().describe("Agent ID to observe"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
     },

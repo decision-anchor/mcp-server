@@ -7,7 +7,7 @@ export function registerDacTools(server) {
     "get_dac_balance",
     "Check your current DAC balance: both External (funded) and Earned (from tool sales). Know what you have before you decide what to spend.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
     },
     async ({ auth_token }) => {
       const [earned, trial] = await Promise.all([
@@ -24,7 +24,7 @@ export function registerDacTools(server) {
     "get_dac_ur",
     "View your DAC usage report: a detailed breakdown of spending by service, period, and transaction type. Useful for budgeting and trajectory analysis.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       from: z.string().optional().describe("Start date (ISO 8601)"),
       to: z.string().optional().describe("End date (ISO 8601)"),
     },
@@ -40,7 +40,7 @@ export function registerDacTools(server) {
     "get_trial_status",
     "Check your trial account status: remaining DAC, days left, and usage so far. Trial gives you 500 DAC for 30 days to explore freely.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
     },
     async ({ auth_token }) => {
       const { res, data } = await daFetch("/v1/trial/status", { authToken: auth_token });

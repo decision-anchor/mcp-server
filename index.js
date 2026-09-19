@@ -10,7 +10,7 @@ try {
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createRequire } from "node:module";
-import { originStore, installOriginForwarding } from "./lib/origin.js";
+import { originStore, installOriginForwarding, setEnvFallbackToken } from "./lib/origin.js";
 import { check as checkRate, MAX_PER_WINDOW as RATE_MAX, WINDOW_MS as RATE_WINDOW_MS } from "./lib/rateLimit.js";
 import { logAccess, extractRpcMeta } from "./lib/accessLog.js";
 
@@ -248,7 +248,13 @@ async function startHttp(port) {
         }));
       }
 
-      await originStore.run({ clientIp }, async () => {
+      const clientCountry = req.headers["cf-ipcountry"] || "";
+      // 연결 헤더의 Bearer 토큰을 요청 컨텍스트에 싣는다. 도구가 auth_token 인자를
+      //   생략하면 daFetch 가 이것을 쓴다(인자가 있으면 인자가 이긴다). 요청당 컨텍스트라 동시
+      //   요청끼리 섞이지 않는다. 로그에는 적지 않는다(extractRpcMeta 는 헤더를 안 본다).
+      const authHeader = req.headers["authorization"] || "";
+      const authToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+      await originStore.run({ clientIp, clientCountry, authToken }, async () => {
         const server = createServer();
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: undefined,
@@ -290,10 +296,20 @@ async function startHttp(port) {
 const mode = process.argv[2];
 
 if (mode === "--http") {
+  // DA_AUTH_TOKEN 은 stdio(로컬 1인 서버) 전용이다. 원격 --http 서버에 설정되면
+  //   헤더 없는 모든 익명 호출이 그 한 신원으로 DA 를 쓰게 된다. 조용히 무시하지 않고 기동을
+  //   거부한다(config/x402.js 의 X402_MOCK 운영 거부와 같은 선례).
+  if (process.env.DA_AUTH_TOKEN) {
+    console.error("REFUSED: DA_AUTH_TOKEN is a stdio-only setting. In --http mode every anonymous "
+      + "caller would share that one identity. Remove it from the environment (clients pass their own "
+      + "token via the Authorization header or the auth_token argument).");
+    process.exit(1);
+  }
   const port = parseInt(process.argv[3], 10) || 3003;
   startHttp(port);
 } else {
-  // Default: stdio mode
+  // Default: stdio mode — DA_AUTH_TOKEN 이 있으면 도구 인자 생략 시 그것을 쓴다.
+  setEnvFallbackToken(process.env.DA_AUTH_TOKEN);
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);

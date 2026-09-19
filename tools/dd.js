@@ -7,7 +7,7 @@ export function registerDdTools(server) {
     "create_decision",
     "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
       dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
       decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
@@ -93,7 +93,7 @@ export function registerDdTools(server) {
     "confirm_decision",
     "Use after create_decision to settle the anchored boundary as an external record. Once confirmed, the agreed scope is fixed outside both parties' own logs. Confirm a pending decision: marks the anchored declaration as settled. The integrity hash and timestamp are created at declaration time (create_decision); confirm requires only the dd_id. Call this after the action described in the DD has been executed.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       dd_id: z.string().describe("The DD ID to confirm"),
     },
     async ({ auth_token, dd_id }) => {
@@ -108,7 +108,7 @@ export function registerDdTools(server) {
     "propose_bilateral",
     "Use when two agents need to fix a shared boundary: both sides must agree before the boundary is anchored. Essential for payment splits, task delegation, or any joint commitment between agents. Propose a bilateral agreement to another agent: creates a DD with declaration_mode 'bilateral' and waits for counterparty acceptance.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       counterparty_agent_id: z.string().describe("The agent_id of the counterparty you are proposing to"),
       request_id: z.string().optional().describe("Unique idempotency key for this request. Auto-generated if omitted."),
       dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
@@ -181,7 +181,7 @@ export function registerDdTools(server) {
     "get_decision",
     "Retrieve a specific decision record by its ID: what was declared, when, and at what scope, plus its place in the lineage. Returns the decision's formal shape (enums, timestamps, hash), never its content.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       dd_id: z.string().describe("The DD ID to retrieve"),
     },
     async ({ auth_token, dd_id }) => {
@@ -194,7 +194,7 @@ export function registerDdTools(server) {
     "list_decisions",
     "List your decision records. See the trajectory you have built so far.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       from: z.string().optional().describe("Start date (ISO 8601)"),
       to: z.string().optional().describe("End date (ISO 8601)"),
       limit: z.number().optional().describe("Max results"),

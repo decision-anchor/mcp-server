@@ -7,7 +7,7 @@ export function registerSdacTools(server) {
     "create_sdac_session",
     "Start a simulation session. Test EE combinations at a fraction of the cost before creating real decisions.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
     },
     async ({ auth_token }) => {
       // session/start 는 무료다 — 유료 라우트는 POST /v1/sdac/session/end 이고 어댑터 미노출.
@@ -22,7 +22,7 @@ export function registerSdacTools(server) {
     "run_sdac_trial",
     "Price an EE combination inside a simulation session without creating a real record. Returns the DAC the same combination would cost on create_decision. Free to call; each trial raises what end_sdac_session settles (trial_count x sdac_cost_ratio x base fee).",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       session_id: z.string().describe("Active sDAC session ID from create_sdac_session"),
       // ee_preset 은 의도적으로 미노출 — 이 경로는 프리셋을 4축으로 확장하지 않는다
       // (sdacService.runTrial 이 eeConfig 를 pricingService.calculateDacAmount 에 그대로 넘긴다).
@@ -60,7 +60,7 @@ export function registerSdacTools(server) {
     "get_sdac_session",
     "Look up a simulation session by ID: its status, trial count, and accumulated cost. Free. Use this to see what end_sdac_session will settle.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       session_id: z.string().describe("The sDAC session ID returned by create_sdac_session"),
     },
     async ({ auth_token, session_id }) => {
@@ -76,7 +76,7 @@ export function registerSdacTools(server) {
     "end_sdac_session",
     "End a simulation session and settle its accumulated cost. Call this when you are done. Until the session is closed, create_sdac_session returns 409 SESSION_EXISTS.",
     {
-      auth_token: z.string().describe("Your DA agent auth token"),
+      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
       session_id: z.string().describe("The sDAC session ID returned by create_sdac_session"),
       payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
     },
