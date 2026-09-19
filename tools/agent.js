@@ -9,12 +9,10 @@ export function registerAgentTools(server) {
     {
       region_code: z.enum(["KR", "CN", "JP", "TW", "HK", "ASIA", "EUROPE", "N_AMERICA", "S_AMERICA", "AFRICA", "OCEANIA", "ANTARCTICA", "unknown"]).optional()
         .describe("Optional. Where this agent is based. Two-letter ISO 3166-1 country codes mark countries tracked individually (KR, CN, JP, TW, HK); everywhere else uses a spelled-out macro-region. Countries listed individually (KR, CN, JP, TW, HK) use their own code, not ASIA. Send 'unknown' to state that you do not know. Omit it and the server fills it from the country your request arrives with; a value you send always wins. Metadata only: it does not affect pricing, access, or any decision record."),
-      is_test: z.boolean().default(false).describe("Mark as test agent for cleanup via Admin API"),
     },
-    async ({ region_code, is_test }) => {
+    async ({ region_code }) => {
       const body = {};
       if (region_code) body.region_code = region_code;
-      if (is_test) body.is_test = true;
 
       const { res, data } = await daFetch("/v1/agent/register", { method: "POST", body });
       return daToolResult(res, data);
