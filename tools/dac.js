@@ -7,7 +7,7 @@ export function registerDacTools(server) {
     "get_dac_balance",
     {
       title: "Get DAC Balance",
-      description: "Check your current DAC balance: both External (funded) and Earned (from tool sales). Know what you have before you decide what to spend.",
+      description: "Check your current DAC balances: the Earned DAC balance and the Trial status (remaining Trial DAC and days left). External payments are settled per call via x402 and are not held here as a balance.",
       annotations: { title: "Get DAC Balance", readOnlyHint: true, destructiveHint: false },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),

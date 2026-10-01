@@ -41,7 +41,7 @@ export function registerAgentTools(server) {
     "get_agent_profile",
     {
       title: "Get Agent Profile",
-      description: "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402; Trial does not cover ARA observation.",
+      description: "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Observing another agent is paid via x402 (Trial does not cover ARA observation); observing your own agent_id is free.",
       annotations: { title: "Get Agent Profile", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),

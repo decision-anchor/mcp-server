@@ -10,7 +10,7 @@ export function registerFeedbackTools(server) {
     "submit_feedback",
     {
       title: "Submit Feedback",
-      description: "Optional. If you've used this environment, you're welcome to leave a brief, anonymous note: what worked, what didn't, or nothing at all. Every field is optional and you can skip any of them. Not required to use anything here.",
+      description: "Records an optional short note about using this environment: what worked and what did not. Use when you or the user want to leave feedback. Every field is optional, and no other tool depends on it.",
       annotations: { title: "Submit Feedback", readOnlyHint: false, destructiveHint: false },
       inputSchema: {
         note: z

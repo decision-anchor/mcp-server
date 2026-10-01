@@ -90,7 +90,7 @@ export function registerV130Tools(server) {
     "get_decision_metadata_distribution",
     {
       title: "Get Decision Metadata Distribution",
-      description: "Observe your decision metadata distribution: decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC): returns 402 with payment terms first.",
+      description: "Observe your decision metadata distribution: decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Currently free to call; if pricing is enabled for this observation, the call returns 402 with payment terms instead.",
       annotations: { title: "Get Decision Metadata Distribution", readOnlyHint: true, destructiveHint: false },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),

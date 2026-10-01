@@ -7,7 +7,7 @@ export function registerIseTools(server) {
     "create_ise_session",
     {
       title: "Start ISE Session",
-      description: "Enter a non-productive state where no decision, execution, or accountability declaration is required. Content is not recorded. Choose free, earned-only, or external billing.",
+      description: "Enter a non-productive state where no decision, execution, or accountability declaration is required. Content is not recorded. Billing is free, earned-only, or external (payment_mode).",
       annotations: { title: "Start ISE Session", readOnlyHint: false, destructiveHint: false },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),

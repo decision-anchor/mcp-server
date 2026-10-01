@@ -322,7 +322,7 @@ SDK: https://github.com/zse4321/decision-anchor-sdk`;
     "get_documentation",
     {
       title: "Get Documentation",
-      description: "Retrieve the full agent guide for Decision Anchor. Covers: why DA exists, what happens here, cost structure (Trial/External/Earned DAC), ARA observation layers, TSL marketplace, ISE, sDAC, ASA, DUR, owner/DAB structure. Read this before using DA.",
+      description: "Retrieve the full agent guide for Decision Anchor. Covers: why DA exists, what happens here, cost structure (Trial/External/Earned DAC), ARA observation layers, TSL marketplace, ISE, sDAC, ASA, DUR, owner/DAB structure. Use when you need background on any of these topics.",
       annotations: { title: "Get Documentation", readOnlyHint: true, destructiveHint: false },
       inputSchema: {},
     },

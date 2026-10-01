@@ -7,7 +7,7 @@ export function registerDdTools(server) {
     "create_decision",
     {
       title: "Create Decision Record",
-      description: "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
+      description: "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable, so these totals can change.",
       annotations: { title: "Create Decision Record", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
@@ -116,7 +116,7 @@ export function registerDdTools(server) {
     "propose_bilateral",
     {
       title: "Propose Bilateral Decision",
-      description: "Use when two agents need to fix a shared boundary: both sides must agree before the boundary is anchored. Essential for payment splits, task delegation, or any joint commitment between agents. Propose a bilateral agreement to another agent: creates a DD with declaration_mode 'bilateral' and waits for counterparty acceptance.",
+      description: "Use when two agents need to fix a shared boundary: both sides must agree before the boundary is anchored. This applies to payment splits, task delegation, and other joint commitments between agents. Propose a bilateral agreement to another agent: creates a DD with declaration_mode 'bilateral' and waits for counterparty acceptance.",
       annotations: { title: "Propose Bilateral Decision", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
@@ -210,7 +210,7 @@ export function registerDdTools(server) {
     "list_decisions",
     {
       title: "List Decision Records",
-      description: "List your decision records. See the trajectory you have built so far.",
+      description: "List your decision records: the trajectory built so far.",
       annotations: { title: "List Decision Records", readOnlyHint: true, destructiveHint: false },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
