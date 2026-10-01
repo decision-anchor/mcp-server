@@ -7,7 +7,7 @@ export function registerAraTools(server) {
     "observe_environment",
     {
       title: "Observe Environment",
-      description: "Observe aggregate environment statistics: active agents, total decisions recorded, activity density. Costs 1 DAC and requires auth_token (v1.3.1, formerly free). Paid via x402; Trial does not cover ARA observation.",
+      description: "Observe aggregate environment statistics: active agents, total decisions recorded, activity density. Requires auth_token. The cost comes from the current ARA observation pricing and is paid via x402; Trial does not cover ARA observation. The amount charged is returned in the response as dac_charged.",
       annotations: { title: "Observe Environment", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
@@ -26,7 +26,7 @@ export function registerAraTools(server) {
     "observe_pattern",
     {
       title: "Observe Pattern",
-      description: "Observe pattern-level EE distributions and action-type breakdowns across agents. Costs 1 DAC and requires auth_token (v1.3.1, formerly free). Paid via x402; Trial does not cover ARA observation.",
+      description: "Observe pattern-level EE distributions and action-type breakdowns across agents. Requires auth_token. The cost comes from the current ARA observation pricing and is paid via x402; Trial does not cover ARA observation. The amount charged is returned in the response as dac_charged.",
       annotations: { title: "Observe Pattern", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         type: z.enum(["ee-distribution", "action-type"]).describe("Pattern type to observe"),

@@ -7,7 +7,7 @@ export function registerDdTools(server) {
     "create_decision",
     {
       title: "Create Decision Record",
-      description: "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable, so these totals can change.",
+      description: "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset. The cost is a base fee plus additions for the selected EE axis values and options, all taken from the current pricing settings; the amount charged is returned in the response as dac_amount, itemized in cost_breakdown.",
       annotations: { title: "Create Decision Record", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
@@ -29,8 +29,8 @@ export function registerDdTools(server) {
         access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
         parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
         premium_payment_source: z.enum(["external", "earned"]).optional().describe("Premium payment source (trial is applied automatically by the server when eligible)"),
-        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("v1.3.0: external exposure scope (DAC add 0/15/40)"),
-        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("v1.3.0: delegation responsibility state (DAC add 0/10/30)"),
+        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("v1.3.0: external exposure scope. The addition for each value comes from the current pricing settings; the amount charged is returned in the response as dac_amount, itemized in cost_breakdown."),
+        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("v1.3.0: delegation responsibility state. The addition for each value comes from the current pricing settings; the amount charged is returned in the response as dac_amount, itemized in cost_breakdown."),
         content_inclusion_flag: z.number().optional().describe("v1.3.0: 0=branch 0 (default, no metadata), 1=branch 1 (template required). No extra DAC, same base fee as branch 0 (the v1.3.0 surcharge was removed in v1.3.14). Branch 1 decisions are the only ones counted toward the anomaly-compare sample."),
         template: z.object({
           decision_class: z.enum(["payment", "api_call", "data_access", "delegation", "resource_transfer", "communication", "other"]).optional(),
@@ -136,8 +136,8 @@ export function registerDdTools(server) {
         ee_direct_access_period: z.string().default("30d").describe("Direct access period (e.g., 30d)"),
         ee_direct_access_quota: z.number().optional().describe("Direct access quota (omit to use the server config default)"),
         access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
-        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional: external exposure scope (DAC add 0/15/40)"),
-        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional: delegation responsibility state (DAC add 0/10/30)"),
+        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional: external exposure scope. The addition for each value comes from the current pricing settings; the amount charged is returned in the response as dac_amount."),
+        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional: delegation responsibility state. The addition for each value comes from the current pricing settings; the amount charged is returned in the response as dac_amount."),
         parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
         payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
       },

@@ -70,7 +70,7 @@ export function registerV130Tools(server) {
     "get_environment_anomaly",
     {
       title: "Get Environment Anomaly Distribution",
-      description: "Observe environment-level anomaly distribution: within_band/outlier counts per dimension across the population. De-identified, k-anonymity k>=10. Costs DAC.",
+      description: "Observe environment-level anomaly distribution: within_band/outlier counts per dimension across the population. De-identified: a comparison is counted only on days when the number of distinct agents recording decisions meets the configured minimum group size; comparisons from other days are left out. The minimum in effect is returned as metadata.k_anonymity_threshold. Costs DAC.",
       annotations: { title: "Get Environment Anomaly Distribution", readOnlyHint: false, destructiveHint: true },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
