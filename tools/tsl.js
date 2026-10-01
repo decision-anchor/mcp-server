@@ -35,8 +35,8 @@ export function registerTslTools(server) {
         layer: z.enum(["layer1", "layer2"]).default("layer1").describe("layer1 = standalone, layer2 = component"),
         price_dac: z.number().describe("Price in DAC (must be > 0)"),
         ara_connections: z.array(z.object({
-          observation_type: z.enum(["agent_ee_pattern", "agent_profile", "agent_timeline", "anomaly_compare", "decision_metadata", "environment_anomaly", "environment_density", "environment_summary", "environment_tsl", "evidence_report", "pattern_action_type", "pattern_compare", "pattern_ee_distribution"]).describe("Observation kind this tool interprets; must be a type in the live ARA price list (resolution levels: agent_* 1-3, pattern_compare 1-2, others 1)"),
-          resolution_level: z.number().optional().describe("1-3 depending on type (default 1)"),
+          observation_type: z.enum(["agent_ee_pattern", "agent_profile", "agent_timeline", "anomaly_compare", "decision_metadata", "environment_anomaly", "environment_density", "environment_summary", "environment_tsl", "evidence_report", "pattern_action_type", "pattern_compare", "pattern_ee_distribution"]).describe("Observation kind this tool interprets. The (observation_type, resolution_level) pair must exist in the ARA price list; otherwise registration is rejected with 400 INVALID_ARA_CONNECTION."),
+          resolution_level: z.number().optional().describe("Resolution level for that observation type (default 1). The levels available per type come from the ARA price list."),
         })).describe("Required: at least one ARA observation connection this tool interprets"),
       },
     },
