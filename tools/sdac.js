@@ -98,13 +98,14 @@ export function registerSdacTools(server) {
     },
     async ({ auth_token, session_id, payment_signature }) => {
       // 짝이 되는 종료 호출이 빠져 있어, 어댑터 사용자는 세션을 열고 닫지 못한 채
-      // 409 SESSION_EXISTS 에 갇혔다. ISE 와 달리 sDAC 에는 만료 스윕이 없어(스케줄러 부재)
-      // 이 갇힘은 스스로 풀리지 않는다 — 종료 호출만이 유일한 출구다.
+      // 409 SESSION_EXISTS 에 갇혔다. 서버의 최대 유지 시간 자동 종료는 설정이 있을 때만
+      // 동작하므로 종료 호출이 기본 출구다.
       //
       // 결제: ROUTE_CONTEXT 의 x402 라우트다(trialEligible=true). 비용은
       //   trial_count × sdac_cost_ratio × base_fee 라 시행 0회면 0(무과금 통과)이지만,
-      //   시행을 쌓은 뒤 trial 이 소진되면 402 가 난다. 만료 스윕이 없는 쪽이라 그때
-      //   결제 통로가 없으면 갇힘이 영구화되므로 payment_signature 를 받는다.
+      //   시행을 쌓은 뒤 trial 이 소진되면 402 가 난다. 그때 결제할 수 있는 클라이언트를 위해
+      //   payment_signature 를 받는다. 결제 없이 닫는 길은 서버의 부분 종료 플래그
+      //   (allow_partial_charge)이며 디렉토리 프로필 어댑터가 이 도구 호출에 싣는다.
       //
       // 서버는 body.session_id 를 요구한다(없으면 400 MISSING_FIELD). snake_case 가 정본이다.
       const { res, data, paymentResponse } = await daFetch("/v1/sdac/session/end", {
