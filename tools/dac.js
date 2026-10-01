@@ -48,7 +48,7 @@ export function registerDacTools(server) {
     "get_trial_status",
     {
       title: "Get Trial Status",
-      description: "Check your trial account status: remaining DAC, days left, and usage so far. Trial gives you 500 DAC for 30 days to explore freely.",
+      description: "Check your trial account status. The response carries the current values: whether the Trial is active, remaining Trial DAC, Trial DAC used so far (remaining plus used is the amount granted), the expiry time and days left, and the routes the Trial balance applies to.",
       annotations: { title: "Get Trial Status", readOnlyHint: true, destructiveHint: false },
       inputSchema: {
         auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
