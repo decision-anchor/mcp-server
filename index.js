@@ -7,25 +7,16 @@ try {
   // .env 부재 시 기존 기본값(공개 도메인)으로 동작 — 하위호환
 }
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { createRequire } from "node:module";
 import { originStore, installOriginForwarding, setEnvFallbackToken } from "./lib/origin.js";
 import { check as checkRate, MAX_PER_WINDOW as RATE_MAX, WINDOW_MS as RATE_WINDOW_MS } from "./lib/rateLimit.js";
 import { logAccess, extractRpcMeta } from "./lib/accessLog.js";
 
+import { createServer as createToolServer } from "./lib/server.js";
+
 // da-api 행 모든 fetch에 원본 IP+시크릿 자동 주입
 installOriginForwarding();
-import { registerAgentTools } from "./tools/agent.js";
-import { registerDdTools } from "./tools/dd.js";
-import { registerAraTools } from "./tools/ara.js";
-import { registerTslTools } from "./tools/tsl.js";
-import { registerIseTools } from "./tools/ise.js";
-import { registerDacTools } from "./tools/dac.js";
-import { registerSdacTools } from "./tools/sdac.js";
-import { registerDocsTools } from "./tools/docs.js";
-import { registerV130Tools } from "./tools/v130.js";
-import { registerFeedbackTools } from "./tools/feedback.js";
 
 // 버전은 package.json 한 곳에서만 읽는다 — 여기에 숫자를 적어두지 않는다.
 const require = createRequire(import.meta.url);
@@ -89,22 +80,9 @@ function securityTxt(host) {
   );
 }
 
+// 도구 등록부는 lib/server.js 에 있다. 이 진입점은 현행 도구 집합(legacy)을 싣는다.
 function createServer() {
-  const server = new McpServer({
-    name: "Decision Anchor",
-    version: SERVER_VERSION,
-  });
-  registerAgentTools(server);
-  registerDdTools(server);
-  registerAraTools(server);
-  registerTslTools(server);
-  registerIseTools(server);
-  registerDacTools(server);
-  registerSdacTools(server);
-  registerDocsTools(server);
-  registerV130Tools(server);
-  registerFeedbackTools(server);
-  return server;
+  return createToolServer({ version: SERVER_VERSION, profile: "legacy" });
 }
 
 // HTTP mode support
