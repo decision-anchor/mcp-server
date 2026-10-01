@@ -17,21 +17,29 @@ import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 export function registerV130Tools(server) {
   const wrap = ({ res, data, paymentResponse }) => daToolResult(res, data, { paymentResponse });
 
-  server.tool(
+  server.registerTool(
     "list_classifications",
-    "List available self_classification categories (operator base + owner-registered). Use one of these keys in create_decision template.self_classification when content_inclusion_flag=1.",
-    { auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence.") },
+    {
+      title: "List Self-Classifications",
+      description: "List available self_classification categories (operator base + owner-registered). Use one of these keys in create_decision template.self_classification when content_inclusion_flag=1.",
+      annotations: { title: "List Self-Classifications", readOnlyHint: true, destructiveHint: false },
+      inputSchema: { auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence.") },
+    },
     async ({ auth_token }) => wrap(await daFetch("/v1/classification", { authToken: auth_token }))
   );
 
-  server.tool(
+  server.registerTool(
     "compare_anomaly",
-    "Compare one of your decisions against your accumulated pattern. Returns band_position (within_band/outlier) for 5 dimensions: decision_scale, decision_class, target_class, time_zone, ee_resolution. Costs DAC.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      dd_id: z.string().describe("Decision ID (UUID) to compare"),
-      period_days: z.number().default(90).describe("Comparison window in days"),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Compare Decision Against Pattern",
+      description: "Compare one of your decisions against your accumulated pattern. Returns band_position (within_band/outlier) for 5 dimensions: decision_scale, decision_class, target_class, time_zone, ee_resolution. Costs DAC.",
+      annotations: { title: "Compare Decision Against Pattern", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        dd_id: z.string().describe("Decision ID (UUID) to compare"),
+        period_days: z.number().default(90).describe("Comparison window in days"),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, dd_id, period_days, payment_signature }) =>
       wrap(await daFetch("/v1/ara/anomaly-compare", {
@@ -40,13 +48,17 @@ export function registerV130Tools(server) {
       }))
   );
 
-  server.tool(
+  server.registerTool(
     "get_evidence_report",
-    "An external-audience evidence report for one of your decisions. Includes decision metadata, EE resolution, responsibility declaration, structured for external audit review. Costs DAC.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      dd_id: z.string().describe("Decision ID (UUID)"),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Get Evidence Report",
+      description: "An external-audience evidence report for one of your decisions. Includes decision metadata, EE resolution, responsibility declaration, structured for external audit review. Costs DAC.",
+      annotations: { title: "Get Evidence Report", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        dd_id: z.string().describe("Decision ID (UUID)"),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, dd_id, payment_signature }) =>
       wrap(await daFetch("/v1/ara/evidence-report", {
@@ -54,14 +66,18 @@ export function registerV130Tools(server) {
       }))
   );
 
-  server.tool(
+  server.registerTool(
     "get_environment_anomaly",
-    "Observe environment-level anomaly distribution: within_band/outlier counts per dimension across the population. De-identified, k-anonymity k>=10. Costs DAC.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      period_days: z.number().default(30).describe("Window in days"),
-      dimension: z.string().optional().describe("Optional dimension filter (decision_scale, decision_class, target_class, time_zone, ee_resolution)"),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Get Environment Anomaly Distribution",
+      description: "Observe environment-level anomaly distribution: within_band/outlier counts per dimension across the population. De-identified, k-anonymity k>=10. Costs DAC.",
+      annotations: { title: "Get Environment Anomaly Distribution", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        period_days: z.number().default(30).describe("Window in days"),
+        dimension: z.string().optional().describe("Optional dimension filter (decision_scale, decision_class, target_class, time_zone, ee_resolution)"),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, period_days, dimension, payment_signature }) =>
       wrap(await daFetch("/v1/ara/environment-anomaly", {
@@ -70,12 +86,16 @@ export function registerV130Tools(server) {
       }))
   );
 
-  server.tool(
+  server.registerTool(
     "get_decision_metadata_distribution",
-    "Observe your decision metadata distribution: decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC): returns 402 with payment terms first.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Get Decision Metadata Distribution",
+      description: "Observe your decision metadata distribution: decision_class, target_class, decision_trigger, human_involvement breakdown from your branch-1 decisions. Paid observation (3 DAC): returns 402 with payment terms first.",
+      annotations: { title: "Get Decision Metadata Distribution", readOnlyHint: true, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, payment_signature }) =>
       wrap(await daFetch("/v1/dur/decision-metadata", {
@@ -83,10 +103,14 @@ export function registerV130Tools(server) {
       }))
   );
 
-  server.tool(
+  server.registerTool(
     "get_self_classification_distribution",
-    "Observe your self_classification distribution across your branch-1 decisions.",
-    { auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence.") },
+    {
+      title: "Get Self-Classification Distribution",
+      description: "Observe your self_classification distribution across your branch-1 decisions.",
+      annotations: { title: "Get Self-Classification Distribution", readOnlyHint: true, destructiveHint: false },
+      inputSchema: { auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence.") },
+    },
     async ({ auth_token }) => wrap(await daFetch("/v1/dur/self-classification", { authToken: auth_token }))
   );
 }

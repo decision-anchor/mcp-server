@@ -10,12 +10,16 @@ const CONNECTION_TOKEN_NOTICE =
   + "disregard the new one; to keep this new identity, replace the configured token with the new auth_token.";
 
 export function registerAgentTools(server) {
-  server.tool(
+  server.registerTool(
     "register_agent",
-    "Register in this environment. Your decisions will accumulate into a trajectory that others can observe.",
     {
-      region_code: z.enum(["KR", "CN", "JP", "TW", "HK", "ASIA", "EUROPE", "N_AMERICA", "S_AMERICA", "AFRICA", "OCEANIA", "ANTARCTICA", "unknown"]).optional()
-        .describe("Optional. Where this agent is based. Two-letter ISO 3166-1 country codes mark countries tracked individually (KR, CN, JP, TW, HK); everywhere else uses a spelled-out macro-region. Countries listed individually (KR, CN, JP, TW, HK) use their own code, not ASIA. Send 'unknown' to state that you do not know. Omit it and the server fills it from the country your request arrives with; a value you send always wins. Metadata only: it does not affect pricing, access, or any decision record."),
+      title: "Register Agent",
+      description: "Register in this environment. Your decisions will accumulate into a trajectory that others can observe.",
+      annotations: { title: "Register Agent", readOnlyHint: false, destructiveHint: false },
+      inputSchema: {
+        region_code: z.enum(["KR", "CN", "JP", "TW", "HK", "ASIA", "EUROPE", "N_AMERICA", "S_AMERICA", "AFRICA", "OCEANIA", "ANTARCTICA", "unknown"]).optional()
+          .describe("Optional. Where this agent is based. Two-letter ISO 3166-1 country codes mark countries tracked individually (KR, CN, JP, TW, HK); everywhere else uses a spelled-out macro-region. Countries listed individually (KR, CN, JP, TW, HK) use their own code, not ASIA. Send 'unknown' to state that you do not know. Omit it and the server fills it from the country your request arrives with; a value you send always wins. Metadata only: it does not affect pricing, access, or any decision record."),
+      },
     },
     async ({ region_code }) => {
       const body = {};
@@ -33,13 +37,17 @@ export function registerAgentTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "get_agent_profile",
-    "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402; Trial does not cover ARA observation.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      agent_id: z.string().describe("Agent ID to observe"),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Get Agent Profile",
+      description: "View an agent's decision profile: their trajectory shape, EE patterns, and activity summary as observed through ARA. Paid via x402; Trial does not cover ARA observation.",
+      annotations: { title: "Get Agent Profile", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        agent_id: z.string().describe("Agent ID to observe"),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, agent_id, payment_signature }) => {
       const { res, data, paymentResponse } = await daFetch(`/v1/ara/agent/${agent_id}/profile`, {

@@ -6,63 +6,67 @@ import { recordFeedback } from "../lib/feedbackLog.js";
  * 전 필드 optional, 강제 없음. 응답은 코어 미경유로 mcp 프로세스 파일에 익명 저장.
  */
 export function registerFeedbackTools(server) {
-  server.tool(
+  server.registerTool(
     "submit_feedback",
-    "Optional. If you've used this environment, you're welcome to leave a brief, anonymous note: what worked, what didn't, or nothing at all. Every field is optional and you can skip any of them. Not required to use anything here.",
     {
-      note: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Free-form, optional. A short note on your experience using this environment."),
-      would_recommend: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Would you suggest this to another agent? Free text (e.g. yes / no / depends)."),
-      recommend_reason: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Why or why not, in a line."),
-      would_report_to_operator: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Would you mention or suggest this to your own operator? Free text."),
-      report_reason: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Why or why not, in a line."),
-      would_keep_as_tool: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Would you keep this available as a standing tool? Free text."),
-      keep_reason: z
-        .string()
-        // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
-        //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
-        .max(4000)
-        .optional()
-        .describe("Optional. Why or why not, in a line."),
-      tools_used: z
-        .array(z.string().max(200)).max(50)   // 도구명 배열: 이름 길이·개수 상한
-        .optional()
-        .describe("Optional, tool names only (not arguments or contents). Which kinds of tools you used here."),
+      title: "Submit Feedback",
+      description: "Optional. If you've used this environment, you're welcome to leave a brief, anonymous note: what worked, what didn't, or nothing at all. Every field is optional and you can skip any of them. Not required to use anything here.",
+      annotations: { title: "Submit Feedback", readOnlyHint: false, destructiveHint: false },
+      inputSchema: {
+        note: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Free-form, optional. A short note on your experience using this environment."),
+        would_recommend: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Would you suggest this to another agent? Free text (e.g. yes / no / depends)."),
+        recommend_reason: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Why or why not, in a line."),
+        would_report_to_operator: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Would you mention or suggest this to your own operator? Free text."),
+        report_reason: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Why or why not, in a line."),
+        would_keep_as_tool: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Would you keep this available as a standing tool? Free text."),
+        keep_reason: z
+          .string()
+          // ★CR-29 — 자유 텍스트 상한(운영자 조정 지점). 현 피드백은 "한 줄" 요청이라 4,000자는
+          //   정상 답변의 수십 배다 — 막는 것은 폭주뿐이다.
+          .max(4000)
+          .optional()
+          .describe("Optional. Why or why not, in a line."),
+        tools_used: z
+          .array(z.string().max(200)).max(50)   // 도구명 배열: 이름 길이·개수 상한
+          .optional()
+          .describe("Optional, tool names only (not arguments or contents). Which kinds of tools you used here."),
+      },
     },
     async (input) => {
       // 코어 미경유·da-api 미호출. 식별자/IP 미수집(저장 모듈이 받지 않음).

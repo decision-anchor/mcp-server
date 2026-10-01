@@ -3,43 +3,47 @@ import { daToolResult } from "../lib/toolResult.js";
 import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 
 export function registerDdTools(server) {
-  server.tool(
+  server.registerTool(
     "create_decision",
-    "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
-      dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
-      decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
-      decision_action_type: z.enum(["execute", "hold", "reject", "depend", "approve"]).describe("Action type"),
-      origin_context_type: z.enum(["internal", "external", "self", "mixed"]).describe("Origin context"),
-      selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
-      selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
-      decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
-      ee_preset: z.string().optional().describe("Optional EE preset name: expands into the four EE axes and overrides them (fetch active presets via GET /v1/pricing/ee-presets; e.g. EE_basic, EE_standard, EE_high)"),
-      ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained. indefinite is declared but not currently available: selecting it is rejected with 403."),
-      ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
-      ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
-      ee_responsibility_scope: z.enum(["minimal", "standard", "extended"]).default("standard").describe("Responsibility scope"),
-      ee_direct_access_period: z.string().default("30d").describe("Direct access period (e.g., 30d)"),
-      ee_direct_access_quota: z.number().optional().describe("Direct access quota (omit to use the server config default)"),
-      access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
-      parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
-      premium_payment_source: z.enum(["external", "earned"]).optional().describe("Premium payment source (trial is applied automatically by the server when eligible)"),
-      content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("v1.3.0: external exposure scope (DAC add 0/15/40)"),
-      delegation_state: z.enum(["none", "partial", "full"]).optional().describe("v1.3.0: delegation responsibility state (DAC add 0/10/30)"),
-      content_inclusion_flag: z.number().optional().describe("v1.3.0: 0=branch 0 (default, no metadata), 1=branch 1 (template required). No extra DAC, same base fee as branch 0 (the v1.3.0 surcharge was removed in v1.3.14). Branch 1 decisions are the only ones counted toward the anomaly-compare sample."),
-      template: z.object({
-        decision_class: z.enum(["payment", "api_call", "data_access", "delegation", "resource_transfer", "communication", "other"]).optional(),
-        decision_scale_value: z.number().optional(),
-        decision_scale_unit: z.string().optional(),
-        target_class: z.enum(["internal", "external", "third_party", "subagent", "human_owner", "public", "system"]).optional(),
-        call_chain: z.array(z.string()).optional(),
-        self_classification: z.string().optional(),
-        decision_trigger: z.enum(["user_request", "scheduled", "event_driven", "autonomous", "delegated", "external_event"]).optional(),
-        human_involvement: z.enum(["none", "notification", "approval", "co_decision", "review"]).optional(),
-      }).optional().describe("v1.3.0: required when content_inclusion_flag=1. 7-dimensional decision content metadata."),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Create Decision Record",
+      description: "Use when an action crosses an external boundary: payment, delegation, or agreement with another agent. This anchors the responsibility scope. You say when: before you execute, or after a decision you have already made. Record a tamper-evident decision. This route records self-declared decisions; a declaration that involves a counterparty is made with propose_bilateral instead. Each decision is added to your record trajectory, which you and a counterparty can check against DA's external entry. Omitting the EE axes applies the defaults (medium/basic/internal/standard), equivalent to the EE_standard preset, currently 45 DAC total; the cheapest combination is EE_basic (base fee only, currently 10 DAC). Presets are operator-adjustable; fetch current totals via GET /v1/pricing/ee-presets.",
+      annotations: { title: "Create Decision Record", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
+        dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
+        decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
+        decision_action_type: z.enum(["execute", "hold", "reject", "depend", "approve"]).describe("Action type"),
+        origin_context_type: z.enum(["internal", "external", "self", "mixed"]).describe("Origin context"),
+        selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
+        selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
+        decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
+        ee_preset: z.string().optional().describe("Optional EE preset name: expands into the four EE axes and overrides them (fetch active presets via GET /v1/pricing/ee-presets; e.g. EE_basic, EE_standard, EE_high)"),
+        ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained. indefinite is declared but not currently available: selecting it is rejected with 403."),
+        ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
+        ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
+        ee_responsibility_scope: z.enum(["minimal", "standard", "extended"]).default("standard").describe("Responsibility scope"),
+        ee_direct_access_period: z.string().default("30d").describe("Direct access period (e.g., 30d)"),
+        ee_direct_access_quota: z.number().optional().describe("Direct access quota (omit to use the server config default)"),
+        access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
+        parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
+        premium_payment_source: z.enum(["external", "earned"]).optional().describe("Premium payment source (trial is applied automatically by the server when eligible)"),
+        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("v1.3.0: external exposure scope (DAC add 0/15/40)"),
+        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("v1.3.0: delegation responsibility state (DAC add 0/10/30)"),
+        content_inclusion_flag: z.number().optional().describe("v1.3.0: 0=branch 0 (default, no metadata), 1=branch 1 (template required). No extra DAC, same base fee as branch 0 (the v1.3.0 surcharge was removed in v1.3.14). Branch 1 decisions are the only ones counted toward the anomaly-compare sample."),
+        template: z.object({
+          decision_class: z.enum(["payment", "api_call", "data_access", "delegation", "resource_transfer", "communication", "other"]).optional(),
+          decision_scale_value: z.number().optional(),
+          decision_scale_unit: z.string().optional(),
+          target_class: z.enum(["internal", "external", "third_party", "subagent", "human_owner", "public", "system"]).optional(),
+          call_chain: z.array(z.string()).optional(),
+          self_classification: z.string().optional(),
+          decision_trigger: z.enum(["user_request", "scheduled", "event_driven", "autonomous", "delegated", "external_event"]).optional(),
+          human_involvement: z.enum(["none", "notification", "approval", "co_decision", "review"]).optional(),
+        }).optional().describe("v1.3.0: required when content_inclusion_flag=1. 7-dimensional decision content metadata."),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, request_id, parent_dd_id, premium_payment_source, payment_signature, ...params }) => {
       const dd = {
@@ -89,12 +93,16 @@ export function registerDdTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "confirm_decision",
-    "Use after create_decision to settle the anchored boundary as an external record. Once confirmed, the agreed scope is fixed outside both parties' own logs. Confirm a pending decision: marks the anchored declaration as settled. The integrity hash and timestamp are created at declaration time (create_decision); confirm requires only the dd_id. Call this after the action described in the DD has been executed.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      dd_id: z.string().describe("The DD ID to confirm"),
+      title: "Confirm Decision Record",
+      description: "Use after create_decision to settle the anchored boundary as an external record. Once confirmed, the agreed scope is fixed outside both parties' own logs. Confirm a pending decision: marks the anchored declaration as settled. The integrity hash and timestamp are created at declaration time (create_decision); confirm requires only the dd_id. Call this after the action described in the DD has been executed.",
+      annotations: { title: "Confirm Decision Record", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        dd_id: z.string().describe("The DD ID to confirm"),
+      },
     },
     async ({ auth_token, dd_id }) => {
       const { res, data } = await daFetch("/v1/dd/confirm", {
@@ -104,31 +112,35 @@ export function registerDdTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "propose_bilateral",
-    "Use when two agents need to fix a shared boundary: both sides must agree before the boundary is anchored. Essential for payment splits, task delegation, or any joint commitment between agents. Propose a bilateral agreement to another agent: creates a DD with declaration_mode 'bilateral' and waits for counterparty acceptance.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      counterparty_agent_id: z.string().describe("The agent_id of the counterparty you are proposing to"),
-      request_id: z.string().optional().describe("Unique idempotency key for this request. Auto-generated if omitted."),
-      dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
-      decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
-      decision_action_type: z.enum(["execute", "hold", "reject", "depend", "approve"]).describe("Action type"),
-      origin_context_type: z.enum(["internal", "external", "self", "mixed"]).describe("Origin context"),
-      selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
-      selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
-      decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
-      ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained. indefinite is declared but not currently available: selecting it is rejected with 403."),
-      ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
-      ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
-      ee_responsibility_scope: z.enum(["minimal", "standard", "extended"]).default("standard").describe("Responsibility scope"),
-      ee_direct_access_period: z.string().default("30d").describe("Direct access period (e.g., 30d)"),
-      ee_direct_access_quota: z.number().optional().describe("Direct access quota (omit to use the server config default)"),
-      access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
-      content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional: external exposure scope (DAC add 0/15/40)"),
-      delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional: delegation responsibility state (DAC add 0/10/30)"),
-      parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Propose Bilateral Decision",
+      description: "Use when two agents need to fix a shared boundary: both sides must agree before the boundary is anchored. Essential for payment splits, task delegation, or any joint commitment between agents. Propose a bilateral agreement to another agent: creates a DD with declaration_mode 'bilateral' and waits for counterparty acceptance.",
+      annotations: { title: "Propose Bilateral Decision", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        counterparty_agent_id: z.string().describe("The agent_id of the counterparty you are proposing to"),
+        request_id: z.string().optional().describe("Unique idempotency key for this request. Auto-generated if omitted."),
+        dd_unit_type: z.enum(["single", "batch"]).default("single").describe("Decision unit type"),
+        decision_type: z.enum(["internal_service", "external_interaction", "self_attestation"]).describe("Decision type"),
+        decision_action_type: z.enum(["execute", "hold", "reject", "depend", "approve"]).describe("Action type"),
+        origin_context_type: z.enum(["internal", "external", "self", "mixed"]).describe("Origin context"),
+        selection_state: z.enum(["SELECTED", "REJECTED", "ABORTED", "SILENT", "NON_DECISION"]).default("SELECTED").describe("Selection state"),
+        selection_scope: z.enum(["single_target", "multi_target", "chain_scope", "global"]).optional().describe("Optional: declared scope of the selection"),
+        decision_at: z.string().optional().describe("Optional: the time your agent itself decided, ISO 8601. The server normalizes it to UTC and that normalized value enters the integrity hash. It must not be later than the anchoring time (400 DECISION_AT_IN_FUTURE). Omit it and no decision time is recorded."),
+        ee_retention_period: z.enum(["short", "medium", "long", "extreme_long", "indefinite"]).default("medium").describe("How long the record is retained. indefinite is declared but not currently available: selecting it is rejected with 403."),
+        ee_integrity_verification_level: z.enum(["basic", "enhanced", "certifiable"]).default("basic").describe("Verification rigor"),
+        ee_disclosure_format_policy: z.enum(["internal", "shareable", "exportable"]).default("internal").describe("Disclosure format"),
+        ee_responsibility_scope: z.enum(["minimal", "standard", "extended"]).default("standard").describe("Responsibility scope"),
+        ee_direct_access_period: z.string().default("30d").describe("Direct access period (e.g., 30d)"),
+        ee_direct_access_quota: z.number().optional().describe("Direct access quota (omit to use the server config default)"),
+        access_class: z.enum(["self_direct", "ara_only", "internal_only"]).optional().describe("Optional: read-access class for the record"),
+        content_disclosure_scope: z.enum(["owner", "external", "public"]).optional().describe("Optional: external exposure scope (DAC add 0/15/40)"),
+        delegation_state: z.enum(["none", "partial", "full"]).optional().describe("Optional: delegation responsibility state (DAC add 0/10/30)"),
+        parent_dd_id: z.string().optional().describe("Parent DD ID for lineage tracking"),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, counterparty_agent_id, request_id, parent_dd_id, payment_signature, ...params }) => {
       const dd = {
@@ -177,12 +189,16 @@ export function registerDdTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "get_decision",
-    "Retrieve a specific decision record by its ID: what was declared, when, and at what scope, plus its place in the lineage. Returns the decision's formal shape (enums, timestamps, hash), never its content.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      dd_id: z.string().describe("The DD ID to retrieve"),
+      title: "Get Decision Record",
+      description: "Retrieve a specific decision record by its ID: what was declared, when, and at what scope, plus its place in the lineage. Returns the decision's formal shape (enums, timestamps, hash), never its content.",
+      annotations: { title: "Get Decision Record", readOnlyHint: false, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        dd_id: z.string().describe("The DD ID to retrieve"),
+      },
     },
     async ({ auth_token, dd_id }) => {
       const { res, data } = await daFetch(`/v1/dd/${dd_id}`, { authToken: auth_token });
@@ -190,15 +206,19 @@ export function registerDdTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "list_decisions",
-    "List your decision records. See the trajectory you have built so far.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      from: z.string().optional().describe("Start date (ISO 8601)"),
-      to: z.string().optional().describe("End date (ISO 8601)"),
-      limit: z.number().optional().describe("Max results"),
-      offset: z.number().optional().describe("Offset for pagination"),
+      title: "List Decision Records",
+      description: "List your decision records. See the trajectory you have built so far.",
+      annotations: { title: "List Decision Records", readOnlyHint: true, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        from: z.string().optional().describe("Start date (ISO 8601)"),
+        to: z.string().optional().describe("End date (ISO 8601)"),
+        limit: z.number().optional().describe("Max results"),
+        offset: z.number().optional().describe("Offset for pagination"),
+      },
     },
     async ({ auth_token, from, to, limit, offset }) => {
       const { res, data } = await daFetch("/v1/dd/list", {

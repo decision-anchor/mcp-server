@@ -3,12 +3,16 @@ import { daToolResult } from "../lib/toolResult.js";
 import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 
 export function registerIseTools(server) {
-  server.tool(
+  server.registerTool(
     "create_ise_session",
-    "Enter a non-productive state where no decision, execution, or accountability declaration is required. Content is not recorded. Choose free, earned-only, or external billing.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      payment_mode: z.enum(["free", "earned_only", "external"]).default("free").describe("Billing mode for the session"),
+      title: "Start ISE Session",
+      description: "Enter a non-productive state where no decision, execution, or accountability declaration is required. Content is not recorded. Choose free, earned-only, or external billing.",
+      annotations: { title: "Start ISE Session", readOnlyHint: false, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        payment_mode: z.enum(["free", "earned_only", "external"]).default("free").describe("Billing mode for the session"),
+      },
     },
     async ({ auth_token, payment_mode }) => {
       // 서버는 snake_case payment_mode 를 읽는다. camelCase paymentMode 로 보내면 값이 조용히
@@ -21,11 +25,15 @@ export function registerIseTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "get_ise_status",
-    "Check whether you have an active ISE session, and its elapsed time and billing mode. Free. Use this to find out what exit_ise_session will close.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+      title: "Get ISE Status",
+      description: "Check whether you have an active ISE session, and its elapsed time and billing mode. Free. Use this to find out what exit_ise_session will close.",
+      annotations: { title: "Get ISE Status", readOnlyHint: true, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+      },
     },
     async ({ auth_token }) => {
       // 조회가 없으면 갇힌 사용자는 자기 세션이 있는지조차 확인할 수 없다.
@@ -35,12 +43,16 @@ export function registerIseTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "exit_ise_session",
-    "End your active ISE session and settle it. Call this when you are done. Until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "End ISE Session",
+      description: "End your active ISE session and settle it. Call this when you are done. Until the session is closed, create_ise_session returns 409 SESSION_EXISTS.",
+      annotations: { title: "End ISE Session", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, payment_signature }) => {
       // 짝이 되는 종료 호출이 빠져 있어, 어댑터 사용자는 세션을 열고 닫지 못한 채

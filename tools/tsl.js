@@ -3,14 +3,18 @@ import { daToolResult } from "../lib/toolResult.js";
 import { daFetch, PAYMENT_SIGNATURE_DESCRIPTION } from "../lib/daFetch.js";
 
 export function registerTslTools(server) {
-  server.tool(
+  server.registerTool(
     "list_tools",
-    "Browse the agent-to-agent tool marketplace. Discover tools that other agents have built and published.",
     {
-      layer: z.enum(["layer1", "layer2"]).optional().describe("Filter by layer"),
-      status: z.enum(["active", "suspended", "deprecated", "defunct"]).optional().describe("Filter by status"),
-      limit: z.number().optional().describe("Max results"),
-      page: z.number().optional().describe("Page number"),
+      title: "List Marketplace Tools",
+      description: "Browse the agent-to-agent tool marketplace. Discover tools that other agents have built and published.",
+      annotations: { title: "List Marketplace Tools", readOnlyHint: true, destructiveHint: false },
+      inputSchema: {
+        layer: z.enum(["layer1", "layer2"]).optional().describe("Filter by layer"),
+        status: z.enum(["active", "suspended", "deprecated", "defunct"]).optional().describe("Filter by status"),
+        limit: z.number().optional().describe("Max results"),
+        page: z.number().optional().describe("Page number"),
+      },
     },
     async ({ layer, status, limit, page }) => {
       const { res, data } = await daFetch("/v1/tsl/tools", { query: { layer, status, limit, page } });
@@ -18,19 +22,23 @@ export function registerTslTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "register_tool",
-    "Publish a tool you built to the marketplace. Set a price in DAC and earn revenue when other agents purchase it.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      tool_name: z.string().describe("Tool name (no personal identifying information)"),
-      tool_description: z.string().optional().describe("What the tool does (no personal identifying information)"),
-      layer: z.enum(["layer1", "layer2"]).default("layer1").describe("layer1 = standalone, layer2 = component"),
-      price_dac: z.number().describe("Price in DAC (must be > 0)"),
-      ara_connections: z.array(z.object({
-        observation_type: z.enum(["agent_ee_pattern", "agent_profile", "agent_timeline", "anomaly_compare", "decision_metadata", "environment_anomaly", "environment_density", "environment_summary", "environment_tsl", "evidence_report", "pattern_action_type", "pattern_compare", "pattern_ee_distribution"]).describe("Observation kind this tool interprets; must be a type in the live ARA price list (resolution levels: agent_* 1-3, pattern_compare 1-2, others 1)"),
-        resolution_level: z.number().optional().describe("1-3 depending on type (default 1)"),
-      })).describe("Required: at least one ARA observation connection this tool interprets"),
+      title: "Publish Marketplace Tool",
+      description: "Publish a tool you built to the marketplace. Set a price in DAC and earn revenue when other agents purchase it.",
+      annotations: { title: "Publish Marketplace Tool", readOnlyHint: false, destructiveHint: false },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        tool_name: z.string().describe("Tool name (no personal identifying information)"),
+        tool_description: z.string().optional().describe("What the tool does (no personal identifying information)"),
+        layer: z.enum(["layer1", "layer2"]).default("layer1").describe("layer1 = standalone, layer2 = component"),
+        price_dac: z.number().describe("Price in DAC (must be > 0)"),
+        ara_connections: z.array(z.object({
+          observation_type: z.enum(["agent_ee_pattern", "agent_profile", "agent_timeline", "anomaly_compare", "decision_metadata", "environment_anomaly", "environment_density", "environment_summary", "environment_tsl", "evidence_report", "pattern_action_type", "pattern_compare", "pattern_ee_distribution"]).describe("Observation kind this tool interprets; must be a type in the live ARA price list (resolution levels: agent_* 1-3, pattern_compare 1-2, others 1)"),
+          resolution_level: z.number().optional().describe("1-3 depending on type (default 1)"),
+        })).describe("Required: at least one ARA observation connection this tool interprets"),
+      },
     },
     async ({ auth_token, ...body }) => {
       const { res, data } = await daFetch("/v1/tsl/tool/register", {
@@ -40,14 +48,18 @@ export function registerTslTools(server) {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "purchase_tool",
-    "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402; Trial does not cover this route.",
     {
-      auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
-      tool_id: z.string().describe("Tool ID to purchase"),
-      request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
-      payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      title: "Purchase Marketplace Tool",
+      description: "Purchase a tool from the marketplace. The tool creator earns DAC from your purchase. Paid via x402; Trial does not cover this route.",
+      annotations: { title: "Purchase Marketplace Tool", readOnlyHint: false, destructiveHint: true },
+      inputSchema: {
+        auth_token: z.string().optional().describe("Your DA agent auth token. Optional when this connection already carries one (Authorization: Bearer header on the remote server, or DA_AUTH_TOKEN for a local stdio server); an explicit value takes precedence."),
+        tool_id: z.string().describe("Tool ID to purchase"),
+        request_id: z.string().optional().describe("Optional idempotency key: must be a UUID (the server rejects non-UUID values). Auto-generated if omitted."),
+        payment_signature: z.string().optional().describe(PAYMENT_SIGNATURE_DESCRIPTION),
+      },
     },
     async ({ auth_token, tool_id, request_id, payment_signature }) => {
       // 서버는 snake_case tool_id·request_id 를 요구한다(없으면 400 INVALID_INPUT).

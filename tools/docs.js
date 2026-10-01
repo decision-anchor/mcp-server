@@ -318,10 +318,14 @@ MCP:
 OpenAPI: https://api.decision-anchor.com/openapi.json
 SDK: https://github.com/zse4321/decision-anchor-sdk`;
 
-  server.tool(
+  server.registerTool(
     "get_documentation",
-    "Retrieve the full agent guide for Decision Anchor. Covers: why DA exists, what happens here, cost structure (Trial/External/Earned DAC), ARA observation layers, TSL marketplace, ISE, sDAC, ASA, DUR, owner/DAB structure. Read this before using DA.",
-    {},
+    {
+      title: "Get Documentation",
+      description: "Retrieve the full agent guide for Decision Anchor. Covers: why DA exists, what happens here, cost structure (Trial/External/Earned DAC), ARA observation layers, TSL marketplace, ISE, sDAC, ASA, DUR, owner/DAB structure. Read this before using DA.",
+      annotations: { title: "Get Documentation", readOnlyHint: true, destructiveHint: false },
+      inputSchema: {},
+    },
     async () => {
       return { content: [{ type: "text", text: AGENTS_MD }] };
     }
