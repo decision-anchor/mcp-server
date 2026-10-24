@@ -24,6 +24,10 @@ let SERVER_VERSION;
 try { SERVER_VERSION = require("../package.json").version; }   // 모노레포: da-api 버전 단일 출처
 catch { SERVER_VERSION = require("./package.json").version; }  // 단독 배포: 자체 버전 폴백
 
+// POST /mcp 요청 본문 상한(바이트). 넘으면 413 — readBody 머리말 참조.
+const MAX_BODY_BYTES = 1024 * 1024;
+class BodyTooLarge extends Error {}
+
 // robots.txt (정적). 전부 허용 — 발견을 막을 이유 없음. 이 호스트(mcp) 소관 통로만 안내한다
 // (경계: a2a 것을 가리키지 않음). MCP 서버 카드는 api 호스트(/.well-known/mcp.json)에서 서빙되며
 // 거기서 openapi 등으로 이어진다. 어휘는 카드 description 과 정합(외부 기록 환경, 판단 안 함).
@@ -92,14 +96,28 @@ async function startHttp(port) {
     "@modelcontextprotocol/sdk/server/streamableHttp.js"
   );
 
-  // 요청 본문을 문자열로 수집. SDK 가 내부에서 하던 req.json() 과 같은 일을 앞당겨 할 뿐이라
-  // 메모리 프로파일·상한 정책은 종전과 동일하다(새 상한을 도입하지 않는다 = 동작 변화 최소).
+  // 요청 본문을 문자열로 수집. 상한(MAX_BODY_BYTES)을 넘으면 더 모으지 않고 BodyTooLarge 로
+  // 끊는다 — 상한이 없으면 공개 엔드포인트에 큰 본문 몇 개로 프로세스 메모리를 고갈시킬 수 있다
+  // (2026-10-24 실측: 200MB 1건에 RSS 87MB → 619MB). 도구 인자는 수 KB 라 1MB 는 충분하다
+  // (A2A 와 같은 값). Content-Length 가 이미 넘으면 읽기 전에 거절한다.
   const readBody = (req) =>
     new Promise((resolve, reject) => {
-      let buf = "";
-      req.setEncoding("utf8");
-      req.on("data", (c) => { buf += c; });
-      req.on("end", () => resolve(buf));
+      const declared = Number(req.headers["content-length"]);
+      if (declared > MAX_BODY_BYTES) return reject(new BodyTooLarge());
+      let size = 0;
+      const chunks = [];
+      const onData = (c) => {
+        size += c.length;
+        if (size > MAX_BODY_BYTES) {
+          req.off("data", onData);
+          req.pause();
+          reject(new BodyTooLarge());
+          return;
+        }
+        chunks.push(c);
+      };
+      req.on("data", onData);
+      req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
       req.on("error", reject);
     });
 
@@ -204,7 +222,16 @@ async function startHttp(port) {
       try {
         const raw = await readBody(req);
         parsedBody = JSON.parse(raw);
-      } catch {
+      } catch (e) {
+        if (e instanceof BodyTooLarge) {
+          // 남은 본문을 읽지 않고 커넥션을 닫는다 — 응답이 나간 뒤 소켓을 끊는다.
+          res.writeHead(413, { "Content-Type": "application/json", Connection: "close" });
+          res.on("finish", () => req.destroy());
+          return res.end(JSON.stringify({
+            jsonrpc: "2.0", id: null,
+            error: { code: -32600, message: `Request too large. Limit is ${MAX_BODY_BYTES} bytes.` },
+          }));
+        }
         parsedBody = null; // 잘못된 JSON → SDK 가 -32700 응답
       }
       req._daRpcMeta = extractRpcMeta(parsedBody);
